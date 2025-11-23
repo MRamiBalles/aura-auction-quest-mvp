@@ -1,20 +1,27 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { ethers } from 'ethers';
 
 @Injectable()
 export class AuthService {
-    async validateWeb3Signature(address: string, signature: string, message: string): Promise<boolean> {
-        // TODO: Implement real ethers.js signature verification
-        // const recoveredAddress = ethers.utils.verifyMessage(message, signature);
-        // return recoveredAddress.toLowerCase() === address.toLowerCase();
+    constructor(private jwtService: JwtService) { }
 
-        console.log(`Validating signature for ${address}`);
-        return true; // Mock for now
+    async validateWeb3Signature(address: string, signature: string, message: string): Promise<boolean> {
+        try {
+            // Real Ethers.js verification
+            const recoveredAddress = ethers.verifyMessage(message, signature);
+            return recoveredAddress.toLowerCase() === address.toLowerCase();
+        } catch (error) {
+            console.error('Signature verification failed:', error);
+            return false;
+        }
     }
 
     async login(address: string) {
+        const payload = { sub: address, address };
         return {
-            access_token: 'mock_jwt_token_' + address,
-            user: { address, roles: ['hunter'] }
+            access_token: this.jwtService.sign(payload),
+            user: { address } // Roles removed from here, fetched via UserRoleService if needed
         };
     }
 }

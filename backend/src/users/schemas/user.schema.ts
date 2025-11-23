@@ -3,7 +3,7 @@ import * as mongoose from 'mongoose';
 export const UserSchema = new mongoose.Schema({
     address: { type: String, required: true, unique: true },
     username: { type: String },
-    roles: { type: [String], default: ['hunter'] },
+    // Roles moved to separate UserRoleSchema
     createdAt: { type: Date, default: Date.now },
     inventory: [{
         itemId: Number,
