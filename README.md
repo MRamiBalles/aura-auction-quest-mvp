@@ -1,73 +1,89 @@
-# Welcome to your Lovable project
+# AuraAuction Quest (MVP)
 
-## Project info
+A location-based AR treasure hunt game with a secure blockchain economy and anti-cheat protection.
 
-**URL**: https://lovable.dev/projects/4702b4cf-8dfa-4b65-8e88-56c1099dfac8
+## 🌟 Features
 
-## How can I edit this code?
+*   **AR Crystal Hunting**: Find and collect crystals in the real world using your camera.
+*   **Blockchain Economy**: Mint captured crystals as NFTs on the Polygon Amoy Testnet.
+*   **Anti-Cheat System**: Server-side GPS verification to prevent spoofing and teleportation.
+*   **Wallet Integration**: Connect with MetaMask to manage your inventory and tokens.
 
-There are several ways of editing your application.
+---
 
-**Use Lovable**
+## 🛠️ Tech Stack
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/4702b4cf-8dfa-4b65-8e88-56c1099dfac8) and start prompting.
+*   **Frontend**: React, Vite, Tailwind CSS, Framer Motion
+*   **Backend**: NestJS, MongoDB (Mongoose)
+*   **Blockchain**: Hardhat, Solidity, Ethers.js
+*   **AR**: Native HTML5 Camera & Geolocation APIs
 
-Changes made via Lovable will be committed automatically to this repo.
+---
 
-**Use your preferred IDE**
+## 🚀 Getting Started
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 1. Prerequisites
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+*   Node.js (v18+)
+*   npm or yarn
+*   MongoDB (running locally or Atlas URI)
+*   MetaMask Browser Extension
 
-Follow these steps:
+### 2. Backend Setup (Secure API)
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+The backend handles authentication and anti-cheat validation.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+```bash
+cd backend
+npm install
+npm run start:dev
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
+*The server will start on `http://localhost:3000`.*
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+### 3. Smart Contracts (Blockchain)
+
+Deploy the contracts to the Polygon Amoy Testnet.
+
+1.  Create a `.env` file in the root directory:
+    ```env
+    PRIVATE_KEY=your_wallet_private_key
+    ```
+2.  Deploy contracts:
+    ```bash
+    npx hardhat run scripts/deploy.ts --network amoy
+    ```
+3.  Copy the deployed addresses into your frontend config (if applicable).
+
+### 4. Frontend Setup (Game Client)
+
+Run the React application.
+
+```bash
+# Install dependencies
+npm install
+
+# Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+*The game will be available at `http://localhost:8080`.*
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+---
 
-**Use GitHub Codespaces**
+## 🛡️ Anti-Cheat System
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+The game implements a "Trust Sandwich" architecture:
+1.  **Client**: Reports GPS position to Backend.
+2.  **Backend**: Calculates speed and distance. If valid, it signs the move.
+3.  **Blockchain**: (Future) Only accepts signed moves for minting.
 
-## What technologies are used for this project?
+**Current Rules:**
+*   Max Speed: **30 km/h**
+*   Max Teleport Distance: **500m**
 
-This project is built with:
+---
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 📜 License
 
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/4702b4cf-8dfa-4b65-8e88-56c1099dfac8) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+This project is an MVP prototype. All rights reserved.
