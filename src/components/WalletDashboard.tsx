@@ -1,28 +1,6 @@
-const handleMint = async () => {
-  if (!account) {
-    toast.error("Please connect your wallet first!");
-    return;
-  }
-
-  try {
-    toast.info("Initiating Mint Transaction...");
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
-
-    // Send a 0 MATIC transaction to self to simulate a contract interaction
-    const tx = await signer.sendTransaction({
-      to: account,
-      value: ethers.parseEther("0.0"),
-      data: "0x1234" // Dummy data to look like a function call
-    });
-
-    toast.success("Transaction Sent! Waiting for confirmation...");
-    await tx.wait();
-    toast.success(`Mint Successful! Hash: ${tx.hash.slice(0, 10)}...`);
-    logError("Wallet:Mint", `Success: ${tx.hash}`);
         >
-      <Wallet className="w-4 h-4 mr-2" />
-    { account ? `${account.slice(0, 6)}...${account.slice(-4)}` : (isConnecting ? "Connecting..." : "Connect Wallet") }
+  <Wallet className="w-4 h-4 mr-2" />
+{ account ? `${account.slice(0, 6)}...${account.slice(-4)}` : (isConnecting ? "Connecting..." : "Connect Wallet") }
         </Button >
       </header >
 
