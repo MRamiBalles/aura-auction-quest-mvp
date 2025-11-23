@@ -30,9 +30,11 @@
 *   **Objetivo:** Pruebas de estrés de la economía y sistemas anti-trampas.
 *   **Áreas de Enfoque:**
     *   **Capa Anti-Trampas:** Implementar análisis de movimiento basado en ML (acelerómetro + varianza GPS).
+        *   *Ver Detalle Técnico:* [Estrategias Anti-Trampas](./ANTI_CHEAT_STRATEGIES.md)
     *   **Motor PvP:** Duelos en tiempo real basados en WebSocket.
     *   **Pasarela Fiat:** Integración de Stripe/PayPal para usuarios no cripto.
 *   **Seguridad:** Auditoría de Contratos Inteligentes (CertiK/Hacken). **Paso crítico antes de Mainnet.**
+    *   *Ver Arquitectura Segura:* [Arquitectura Backend](./BACKEND_ARCHITECTURE.md)
 
 ## Fase 4: Lanzamiento Global (Mainnet) - Mes 7+
 *   **Objetivo:** Adquisición de Usuarios y Generación de Ingresos.
