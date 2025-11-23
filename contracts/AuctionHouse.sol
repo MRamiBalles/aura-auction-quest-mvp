@@ -5,6 +5,12 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+/**
+ * @title AuctionHouse - SECURITY HARDENED
+ * @notice Fixed critical vulnerabilities:
+ * - P0-1: Added MAX_EXTENSIONS to prevent infinite extension loop
+ * - P0-2: Implemented push-to-pull pattern for failed refunds
+ */
 contract AuctionHouse is ReentrancyGuard, Ownable {
     struct Auction {
         uint256 auctionId;
@@ -26,14 +32,23 @@ contract AuctionHouse is ReentrancyGuard, Ownable {
     uint256 public constant EXTENSION_DURATION = 5 minutes;
     uint256 public constant EXTENSION_WINDOW = 5 minutes;
     
+    // 🔒 FIX P0-1: Prevent infinite extension loop
+    uint256 public constant MAX_EXTENSIONS = 6; // Max 30 minutes extra total
+    mapping(uint256 => uint256) public extensionCount;
+    
     uint256 public platformFee = 250; // 2.5%
     uint256 public constant FEE_DENOMINATOR = 10000;
     uint256 public constant MIN_BID_INCREMENT = 50; // 0.5%
+
+    // 🔒 FIX P0-2: Push-to-pull pattern for failed refunds
+    mapping(address => uint256) public failedRefunds;
 
     event AuctionCreated(uint256 indexed auctionId, address indexed nftContract, uint256 indexed tokenId, address seller, uint256 startPrice, uint256 endTime);
     event BidPlaced(uint256 indexed auctionId, address indexed bidder, uint256 amount);
     event AuctionFinalized(uint256 indexed auctionId, address indexed winner, uint256 amount);
     event AuctionCancelled(uint256 indexed auctionId);
+    event ExtensionLimitReached(uint256 indexed auctionId);
+    event RefundFailed(uint256 indexed auctionId, address indexed bidder, uint256 amount);
 
     function createAuction(
         address nftContract,
@@ -81,10 +96,15 @@ contract AuctionHouse is ReentrancyGuard, Ownable {
         
         require(msg.value >= minBid, "Bid too low");
 
-        // Refund previous bidder
+        // 🔒 FIX P0-2: Refund previous bidder with fallback to pull
         if (auction.currentBidder != address(0)) {
             (bool success, ) = payable(auction.currentBidder).call{value: auction.currentBid}("");
-            require(success, "Refund failed");
+            
+            if (!success) {
+                // If refund fails, allow bidder to withdraw later
+                failedRefunds[auction.currentBidder] += auction.currentBid;
+                emit RefundFailed(auctionId, auction.currentBidder, auction.currentBid);
+            }
         }
 
         // Update auction
@@ -92,12 +112,30 @@ contract AuctionHouse is ReentrancyGuard, Ownable {
         auction.currentBidder = msg.sender;
         bidHistory[auctionId].push(msg.sender);
 
-        // Anti-sniping: extend if bid in last 5 minutes
-        if (auction.endTime - block.timestamp < EXTENSION_WINDOW) {
+        // 🔒 FIX P0-1: Anti-sniping with extension limit
+        if (auction.endTime - block.timestamp < EXTENSION_WINDOW && 
+            extensionCount[auctionId] < MAX_EXTENSIONS) {
             auction.endTime += EXTENSION_DURATION;
+            extensionCount[auctionId]++;
+        } else if (extensionCount[auctionId] >= MAX_EXTENSIONS) {
+            emit ExtensionLimitReached(auctionId);
         }
 
         emit BidPlaced(auctionId, msg.sender, msg.value);
+    }
+
+    /**
+     * 🔒 FIX P0-2: Withdraw failed refunds
+     * @notice Allows users to withdraw refunds that failed during bidding
+     */
+    function withdrawFailedRefund() external nonReentrant {
+        uint256 amount = failedRefunds[msg.sender];
+        require(amount > 0, "No failed refunds");
+        
+        failedRefunds[msg.sender] = 0;
+        
+        (bool success, ) = payable(msg.sender).call{value: amount}("");
+        require(success, "Withdrawal failed");
     }
 
     function finalizeAuction(uint256 auctionId) external nonReentrant {
@@ -117,24 +155,31 @@ contract AuctionHouse is ReentrancyGuard, Ownable {
         uint256 fee = (auction.currentBid * platformFee) / FEE_DENOMINATOR;
         uint256 sellerProceeds = auction.currentBid - fee;
 
-        // Transfer NFT to winner
-        IERC721(auction.nftContract).safeTransferFrom(
+        // 🔒 IMPROVEMENT: Try-catch for NFT transfer
+        try IERC721(auction.nftContract).safeTransferFrom(
             auction.seller,
             auction.currentBidder,
             auction.tokenId
-        );
+        ) {
+            // Transfer successful - proceed with payments
+            
+            // Transfer payment to seller
+            (bool successSeller, ) = payable(auction.seller).call{value: sellerProceeds}("");
+            require(successSeller, "Seller payment failed");
 
-        // Transfer payment to seller
-        (bool successSeller, ) = payable(auction.seller).call{value: sellerProceeds}("");
-        require(successSeller, "Seller payment failed");
+            // Transfer fee to owner
+            if (fee > 0) {
+                (bool successFee, ) = payable(owner()).call{value: fee}("");
+                require(successFee, "Fee payment failed");
+            }
 
-        // Transfer fee to owner
-        if (fee > 0) {
-            (bool successFee, ) = payable(owner()).call{value: fee}("");
-            require(successFee, "Fee payment failed");
+            emit AuctionFinalized(auctionId, auction.currentBidder, auction.currentBid);
+        } catch {
+            // NFT transfer failed - refund winner
+            failedRefunds[auction.currentBidder] += auction.currentBid;
+            emit AuctionCancelled(auctionId);
+            emit RefundFailed(auctionId, auction.currentBidder, auction.currentBid);
         }
-
-        emit AuctionFinalized(auctionId, auction.currentBidder, auction.currentBid);
     }
 
     function cancelAuction(uint256 auctionId) external nonReentrant {
@@ -153,5 +198,19 @@ contract AuctionHouse is ReentrancyGuard, Ownable {
 
     function getBidHistory(uint256 auctionId) external view returns (address[] memory) {
         return bidHistory[auctionId];
+    }
+
+    /**
+     * @notice Get failed refund balance for an address
+     */
+    function getFailedRefund(address account) external view returns (uint256) {
+        return failedRefunds[account];
+    }
+
+    /**
+     * @notice Get extension count for an auction
+     */
+    function getExtensionCount(uint256 auctionId) external view returns (uint256) {
+        return extensionCount[auctionId];
     }
 }
