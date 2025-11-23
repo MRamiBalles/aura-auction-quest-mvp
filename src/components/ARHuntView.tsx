@@ -1,97 +1,243 @@
-<p>Camera permission required for AR Hunt</p>
-      </div >
-    ) : (
-  <video
-    ref={videoRef}
-    autoPlay
-    playsInline
-              LAT: {location.coords.latitude.toFixed(4)}<br />
-              LNG: { location.coords.longitude.toFixed(4) }
-            </>
-          ) : "Acquiring GPS..."}
-        </div >
-      </div >
-    </Card >
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Camera, MapPin, RefreshCw, Crosshair } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { toast } from 'sonner';
+import { useInventory } from '@/contexts/InventoryContext';
+import { useSound } from '@/contexts/SoundContext';
+import { api } from '@/services/api';
 
-  <div className="flex flex-col gap-2 pointer-events-auto">
-    <Button size="icon" variant="outline" className="bg-black/50 border-aura-purple/50 text-aura-purple hover:bg-aura-purple/20" onClick={spawnCrystal}>
-      <RefreshCw className="w-4 h-4" />
-    </Button>
-  </div>
-  </div >
-
-  {/* Crosshair */ }
-  < div className = "absolute inset-0 flex items-center justify-center opacity-50" >
-    <Crosshair className="w-12 h-12 text-white/80" />
-  </div >
-
-  {/* AR Objects (Crystals) */ }
-{
-  crystals.map(crystal => (
-    <motion.div
-      key={crystal.id}
-      className="absolute pointer-events-auto"
-      style={{ left: `${crystal.x}%`, top: `${crystal.y}%` }}
-      initial={{ scale: 0, opacity: 0, rotate: -180 }}
-      animate={{ scale: 1, opacity: 1, rotate: 0 }}
-      exit={{ scale: 0, opacity: 0, rotate: 180 }}
-      transition={{ type: "spring", stiffness: 260, damping: 20 }}
-    >
-      <button
-        onClick={() => handleCapture(crystal.id)}
-        className="group relative flex flex-col items-center"
-      >
-        {/* Particle Effects */}
-        <div className="absolute inset-0 pointer-events-none">
-          {[...Array(6)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute top-1/2 left-1/2 w-2 h-2 bg-aura-cyan rounded-full"
-              animate={{
-                x: [0, (Math.random() - 0.5) * 100],
-                y: [0, (Math.random() - 0.5) * 100],
-                opacity: [1, 0],
-                scale: [1, 0],
-              }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                delay: i * 0.2,
-                ease: "easeOut"
-              }}
-            />
-          ))}
-        </div>
-
-        <div className="w-20 h-20 bg-gradient-to-br from-aura-cyan via-aura-purple to-pink-500 rounded-full blur-md opacity-80 group-hover:opacity-100 transition-opacity animate-pulse shadow-[0_0_30px_rgba(0,255,255,0.5)]" />
-        <div className="absolute top-2 w-16 h-16 bg-white/30 rounded-full backdrop-blur-sm border border-white/50 group-hover:scale-110 transition-transform" />
-
-        {/* Floating Label */}
-        <motion.span
-          className="mt-2 text-xs font-bold text-white bg-black/60 px-3 py-1 rounded-full backdrop-blur-md border border-white/20"
-          animate={{ y: [0, -5, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          {crystal.dist}m
-        </motion.span>
-      </button>
-    </motion.div>
-  ))
+interface Crystal {
+  id: number;
+  x: number;
+  y: number;
+  dist: number;
 }
 
-{/* Bottom Controls */ }
-<div className="absolute bottom-24 left-0 right-0 flex justify-center pointer-events-auto">
-  <Button
-    size="lg"
-    className="rounded-full w-16 h-16 bg-white/20 border-2 border-white/50 hover:bg-white/30 backdrop-blur-sm"
-    onClick={() => toast.info("Scanning area...")}
-  >
-    <Camera className="w-8 h-8 text-white" />
-  </Button>
-</div>
-</div >
-  </div >
-);
+const ARHuntView = () => {
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [crystals, setCrystals] = useState<Crystal[]>([]);
+  const [location, setLocation] = useState<GeolocationPosition | null>(null);
+  const [prevLocation, setPrevLocation] = useState<GeolocationPosition | null>(null);
+
+  const { addItem } = useInventory();
+  const { playSound } = useSound();
+  // Mock address for MVP - in production this comes from Web3Context
+  const address = "0x123...mock";
+
+  useEffect(() => {
+    const startCamera = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+        setHasPermission(true);
+      } catch (err) {
+        console.error("Camera error:", err);
+        setHasPermission(false);
+      }
+    };
+
+    const watchLocation = () => {
+      if ('geolocation' in navigator) {
+        navigator.geolocation.watchPosition(
+          (pos) => {
+            setPrevLocation(location);
+            setLocation(pos);
+          },
+          (err) => console.error("GPS error:", err),
+          { enableHighAccuracy: true }
+        );
+      }
+    };
+
+    startCamera();
+    watchLocation();
+
+    return () => {
+      // Cleanup video stream
+      if (videoRef.current && videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []); // Empty dependency array to run once on mount
+
+  const spawnCrystal = () => {
+    const newCrystal = {
+      id: Date.now(),
+      x: Math.random() * 80 + 10, // 10-90% screen width
+      y: Math.random() * 60 + 20, // 20-80% screen height
+      dist: Math.floor(Math.random() * 50) + 5 // 5-55m away
+    };
+    setCrystals(prev => [...prev.slice(-2), newCrystal]); // Keep max 3
+    playSound('spawn');
+  };
+
+  const handleCapture = async (id: number) => {
+    if (!location) {
+      toast.error("GPS signal required to claim!");
+      return;
+    }
+
+    // For the first move, if we don't have a previous location, use current
+    const pLoc = prevLocation || location;
+
+    try {
+      playSound('capture');
+      toast.info("Verifying claim with server...");
+
+      // In a real app, we would sign a message here using the wallet
+      const signature = "0xsignature...";
+      const message = "Claim reward";
+
+      const result = await api.game.claimReward({
+        address: address,
+        signature: signature,
+        message: message,
+        prevLat: pLoc.coords.latitude,
+        prevLon: pLoc.coords.longitude,
+        prevTime: pLoc.timestamp,
+        currLat: location.coords.latitude,
+        currLon: location.coords.longitude,
+        currTime: location.timestamp
+      });
+
+      if (result.success) {
+        toast.success(`Crystal #${id} Captured! +${result.reward.value} AURA`);
+        setCrystals(prev => prev.filter(c => c.id !== id));
+
+        addItem({
+          id: result.reward.itemId,
+          type: result.reward.type,
+          rarity: result.reward.rarity,
+          value: result.reward.value,
+          timestamp: new Date(result.reward.acquiredAt).getTime()
+        });
+      }
+    } catch (error: any) {
+      playSound('error');
+      toast.error(`Claim Failed: ${error.message}`);
+    }
+  };
+
+  return (
+    <div className="relative h-screen w-full bg-black overflow-hidden">
+      {/* Camera Feed */}
+      {hasPermission === false ? (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-900 text-white">
+          <p>Camera permission required for AR Hunt</p>
+        </div>
+      ) : (
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      )}
+
+      {/* HUD Overlay */}
+      <div className="absolute inset-0 pointer-events-none">
+        {/* Top Bar */}
+        <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
+          <Card className="bg-black/50 border-aura-cyan/30 backdrop-blur-md p-3 pointer-events-auto">
+            <div className="flex items-center gap-2 text-aura-cyan">
+              <MapPin className="w-4 h-4" />
+              <div className="text-xs font-mono">
+                {location ? (
+                  <>
+                    LAT: {location.coords.latitude.toFixed(4)}<br />
+                    LNG: {location.coords.longitude.toFixed(4)}
+                  </>
+                ) : "Acquiring GPS..."}
+              </div>
+            </div>
+          </Card>
+
+          <div className="flex flex-col gap-2 pointer-events-auto">
+            <Button size="icon" variant="outline" className="bg-black/50 border-aura-purple/50 text-aura-purple hover:bg-aura-purple/20" onClick={spawnCrystal}>
+              <RefreshCw className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Crosshair */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-50">
+          <Crosshair className="w-12 h-12 text-white/80" />
+        </div>
+
+        {/* AR Objects (Crystals) */}
+        <AnimatePresence>
+          {crystals.map(crystal => (
+            <motion.div
+              key={crystal.id}
+              className="absolute pointer-events-auto"
+              style={{ left: `${crystal.x}%`, top: `${crystal.y}%` }}
+              initial={{ scale: 0, opacity: 0, rotate: -180 }}
+              animate={{ scale: 1, opacity: 1, rotate: 0 }}
+              exit={{ scale: 0, opacity: 0, rotate: 180 }}
+              transition={{ type: "spring", stiffness: 260, damping: 20 }}
+            >
+              <button
+                onClick={() => handleCapture(crystal.id)}
+                className="group relative flex flex-col items-center"
+              >
+                {/* Particle Effects */}
+                <div className="absolute inset-0 pointer-events-none">
+                  {[...Array(6)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="absolute top-1/2 left-1/2 w-2 h-2 bg-aura-cyan rounded-full"
+                      animate={{
+                        x: [0, (Math.random() - 0.5) * 100],
+                        y: [0, (Math.random() - 0.5) * 100],
+                        opacity: [1, 0],
+                        scale: [1, 0],
+                      }}
+                      transition={{
+                        duration: 1.5,
+                        repeat: Infinity,
+                        delay: i * 0.2,
+                        ease: "easeOut"
+                      }}
+                    />
+                  ))}
+                </div>
+
+                <div className="w-20 h-20 bg-gradient-to-br from-aura-cyan via-aura-purple to-pink-500 rounded-full blur-md opacity-80 group-hover:opacity-100 transition-opacity animate-pulse shadow-[0_0_30px_rgba(0,255,255,0.5)]" />
+                <div className="absolute top-2 w-16 h-16 bg-white/30 rounded-full backdrop-blur-sm border border-white/50 group-hover:scale-110 transition-transform" />
+
+                {/* Floating Label */}
+                <motion.span
+                  className="mt-2 text-xs font-bold text-white bg-black/60 px-3 py-1 rounded-full backdrop-blur-md border border-white/20"
+                  animate={{ y: [0, -5, 0] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  {crystal.dist}m
+                </motion.span>
+              </button>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+
+        {/* Bottom Controls */}
+        <div className="absolute bottom-24 left-0 right-0 flex justify-center pointer-events-auto">
+          <Button
+            size="lg"
+            className="rounded-full w-16 h-16 bg-white/20 border-2 border-white/50 hover:bg-white/30 backdrop-blur-sm"
+            onClick={() => toast.info("Scanning area...")}
+          >
+            <Camera className="w-8 h-8 text-white" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default ARHuntView;
