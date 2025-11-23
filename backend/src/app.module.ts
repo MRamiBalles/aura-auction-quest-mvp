@@ -8,6 +8,8 @@ import { UsersModule } from './users/users.module';
 import { AntiCheatModule } from './anticheat/anticheat.module';
 import { GameModule } from './game/game.module';
 import { RedisModule } from './redis/redis.module';
+import { MarketplaceModule } from './marketplace/marketplace.module';
+import { SocialModule } from './social/social.module';
 
 @Module({
     imports: [
@@ -15,9 +17,10 @@ import { RedisModule } from './redis/redis.module';
         AuthModule,
         UsersModule,
         AntiCheatModule,
-        AntiCheatModule,
         GameModule,
-        RedisModule
+        RedisModule,
+        MarketplaceModule,
+        SocialModule,
     ],
     controllers: [AppController],
     providers: [AppService],
