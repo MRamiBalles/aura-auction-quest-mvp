@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Crosshair, MapPin, Camera, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { logError } from '@/utils/logger';
 
 const ARHuntView = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -21,7 +22,7 @@ const ARHuntView = () => {
           setHasPermission(true);
         }
       } catch (err) {
-        console.error("Camera error:", err);
+        logError("ARHunt:Camera", err);
         setHasPermission(false);
         toast.error("Camera permission denied. AR features disabled.");
       }
@@ -52,7 +53,7 @@ const ARHuntView = () => {
           spawnCrystal();
         }
       },
-      (err) => console.error("GPS Error:", err),
+      (err) => logError("ARHunt:GPS", err),
       { enableHighAccuracy: true }
     );
 
