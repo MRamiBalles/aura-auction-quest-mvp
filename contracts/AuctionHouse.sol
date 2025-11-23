@@ -1,0 +1,157 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract AuctionHouse is ReentrancyGuard, Ownable {
+    struct Auction {
+        uint256 auctionId;
+        address nftContract;
+        uint256 tokenId;
+        address seller;
+        uint256 startPrice;
+        uint256 currentBid;
+        address currentBidder;
+        uint256 endTime;
+        bool active;
+    }
+
+    uint256 private auctionCounter;
+    mapping(uint256 => Auction) public auctions;
+    mapping(uint256 => address[]) public bidHistory;
+    
+    // Anti-sniping: extend auction by 5 minutes if bid in last 5 minutes
+    uint256 public constant EXTENSION_DURATION = 5 minutes;
+    uint256 public constant EXTENSION_WINDOW = 5 minutes;
+    
+    uint256 public platformFee = 250; // 2.5%
+    uint256 public constant FEE_DENOMINATOR = 10000;
+    uint256 public constant MIN_BID_INCREMENT = 50; // 0.5%
+
+    event AuctionCreated(uint256 indexed auctionId, address indexed nftContract, uint256 indexed tokenId, address seller, uint256 startPrice, uint256 endTime);
+    event BidPlaced(uint256 indexed auctionId, address indexed bidder, uint256 amount);
+    event AuctionFinalized(uint256 indexed auctionId, address indexed winner, uint256 amount);
+    event AuctionCancelled(uint256 indexed auctionId);
+
+    function createAuction(
+        address nftContract,
+        uint256 tokenId,
+        uint256 startPrice,
+        uint256 duration
+    ) external nonReentrant returns (uint256) {
+        require(startPrice > 0, "Start price must be > 0");
+        require(duration >= 1 hours && duration <= 7 days, "Duration must be 1h-7d");
+        require(IERC721(nftContract).ownerOf(tokenId) == msg.sender, "Not the owner");
+        require(
+            IERC721(nftContract).isApprovedForAll(msg.sender, address(this)) ||
+            IERC721(nftContract).getApproved(tokenId) == address(this),
+            "AuctionHouse not approved"
+        );
+
+        auctionCounter++;
+        uint256 endTime = block.timestamp + duration;
+        
+        auctions[auctionCounter] = Auction({
+            auctionId: auctionCounter,
+            nftContract: nftContract,
+            tokenId: tokenId,
+            seller: msg.sender,
+            startPrice: startPrice,
+            currentBid: 0,
+            currentBidder: address(0),
+            endTime: endTime,
+            active: true
+        });
+
+        emit AuctionCreated(auctionCounter, nftContract, tokenId, msg.sender, startPrice, endTime);
+        return auctionCounter;
+    }
+
+    function placeBid(uint256 auctionId) external payable nonReentrant {
+        Auction storage auction = auctions[auctionId];
+        require(auction.active, "Auction not active");
+        require(block.timestamp < auction.endTime, "Auction ended");
+        require(msg.sender != auction.seller, "Seller cannot bid");
+
+        uint256 minBid = auction.currentBid == 0 
+            ? auction.startPrice 
+            : auction.currentBid + (auction.currentBid * MIN_BID_INCREMENT / FEE_DENOMINATOR);
+        
+        require(msg.value >= minBid, "Bid too low");
+
+        // Refund previous bidder
+        if (auction.currentBidder != address(0)) {
+            (bool success, ) = payable(auction.currentBidder).call{value: auction.currentBid}("");
+            require(success, "Refund failed");
+        }
+
+        // Update auction
+        auction.currentBid = msg.value;
+        auction.currentBidder = msg.sender;
+        bidHistory[auctionId].push(msg.sender);
+
+        // Anti-sniping: extend if bid in last 5 minutes
+        if (auction.endTime - block.timestamp < EXTENSION_WINDOW) {
+            auction.endTime += EXTENSION_DURATION;
+        }
+
+        emit BidPlaced(auctionId, msg.sender, msg.value);
+    }
+
+    function finalizeAuction(uint256 auctionId) external nonReentrant {
+        Auction storage auction = auctions[auctionId];
+        require(auction.active, "Auction not active");
+        require(block.timestamp >= auction.endTime, "Auction not ended");
+
+        auction.active = false;
+
+        // If no bids, return NFT to seller
+        if (auction.currentBidder == address(0)) {
+            emit AuctionCancelled(auctionId);
+            return;
+        }
+
+        // Calculate fees
+        uint256 fee = (auction.currentBid * platformFee) / FEE_DENOMINATOR;
+        uint256 sellerProceeds = auction.currentBid - fee;
+
+        // Transfer NFT to winner
+        IERC721(auction.nftContract).safeTransferFrom(
+            auction.seller,
+            auction.currentBidder,
+            auction.tokenId
+        );
+
+        // Transfer payment to seller
+        (bool successSeller, ) = payable(auction.seller).call{value: sellerProceeds}("");
+        require(successSeller, "Seller payment failed");
+
+        // Transfer fee to owner
+        if (fee > 0) {
+            (bool successFee, ) = payable(owner()).call{value: fee}("");
+            require(successFee, "Fee payment failed");
+        }
+
+        emit AuctionFinalized(auctionId, auction.currentBidder, auction.currentBid);
+    }
+
+    function cancelAuction(uint256 auctionId) external nonReentrant {
+        Auction storage auction = auctions[auctionId];
+        require(auction.active, "Auction not active");
+        require(auction.seller == msg.sender, "Not the seller");
+        require(auction.currentBidder == address(0), "Auction has bids");
+
+        auction.active = false;
+        emit AuctionCancelled(auctionId);
+    }
+
+    function getAuction(uint256 auctionId) external view returns (Auction memory) {
+        return auctions[auctionId];
+    }
+
+    function getBidHistory(uint256 auctionId) external view returns (address[] memory) {
+        return bidHistory[auctionId];
+    }
+}
