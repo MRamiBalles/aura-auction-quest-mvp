@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { User, X, Trophy, Zap, Sparkles, Award, TrendingUp } from "lucide-react";
@@ -105,31 +105,46 @@ const ProfileInventory = ({ onBack }: ProfileInventoryProps) => {
             <Sparkles className="w-4 h-4" /> NFT Inventory ({items.length})
           </h3>
           <div className="grid grid-cols-2 gap-3">
-            {items.map((item, index) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card className="p-4 bg-card/50 hover:bg-card/70 cursor-pointer transition-all border-primary/20 group">
-                  <div className="text-5xl mb-2 group-hover:scale-110 transition-transform">
-                    {item.type === 'crystal' ? '🔮' : '🏺'}
-                  </div>
-                  <div className="space-y-1">
-                    <div className="font-bold text-sm line-clamp-1">
-                      {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)} {item.type === 'crystal' ? 'Crystal' : 'Artifact'}
+            <AnimatePresence mode="popLayout">
+              {items.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.5 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 25,
+                    delay: index * 0.05
+                  }}
+                  layout
+                >
+                  <Card className="relative p-4 bg-black/40 backdrop-blur-xl border-white/10 hover:border-aura-cyan/50 cursor-pointer transition-all group overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                    <div className="relative z-10">
+                      <div className="text-5xl mb-2 group-hover:scale-110 transition-transform duration-300 filter drop-shadow-lg">
+                        {item.type === 'crystal' ? '🔮' : '🏺'}
+                      </div>
+                      <div className="space-y-1">
+                        <div className="font-bold text-sm line-clamp-1 text-white group-hover:text-aura-cyan transition-colors">
+                          {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)} {item.type === 'crystal' ? 'Crystal' : 'Artifact'}
+                        </div>
+                        <div className="flex items-center justify-between text-xs">
+                          <span className={`font-medium ${item.rarity === "legendary" ? "text-amber-400 drop-shadow-glow" :
+                            item.rarity === "rare" ? "text-aura-purple" : "text-aura-cyan"
+                            }`}>
+                            {item.rarity.toUpperCase()}
+                          </span>
+                          <span className="font-bold text-white/90">${item.value}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className={`${item.rarity === "legendary" ? "text-accent" : item.rarity === "rare" ? "text-secondary" : "text-primary"}`}>
-                        {item.rarity}
-                      </span>
-                      <span className="font-bold">${item.value}</span>
-                    </div>
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
+                  </Card>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         </div>
 

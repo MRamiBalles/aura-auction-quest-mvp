@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Crosshair, MapPin, Camera, RefreshCw } from "lucide-react";
@@ -134,22 +135,54 @@ const ARHuntView = () => {
 
         {/* AR Objects (Crystals) */}
         {crystals.map(crystal => (
-          <div
+          <motion.div
             key={crystal.id}
-            className="absolute pointer-events-auto animate-bounce"
+            className="absolute pointer-events-auto"
             style={{ left: `${crystal.x}%`, top: `${crystal.y}%` }}
+            initial={{ scale: 0, opacity: 0, rotate: -180 }}
+            animate={{ scale: 1, opacity: 1, rotate: 0 }}
+            exit={{ scale: 0, opacity: 0, rotate: 180 }}
+            transition={{ type: "spring", stiffness: 260, damping: 20 }}
           >
             <button
               onClick={() => handleCapture(crystal.id)}
               className="group relative flex flex-col items-center"
             >
-              <div className="w-16 h-16 bg-gradient-to-br from-aura-cyan to-aura-purple rounded-full blur-md opacity-70 group-hover:opacity-100 transition-opacity animate-pulse" />
-              <div className="absolute top-0 w-12 h-12 bg-white rounded-full opacity-20 group-hover:scale-110 transition-transform" />
-              <span className="mt-2 text-xs font-bold text-white bg-black/50 px-2 py-1 rounded backdrop-blur-sm">
+              {/* Particle Effects */}
+              <div className="absolute inset-0 pointer-events-none">
+                {[...Array(6)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className="absolute top-1/2 left-1/2 w-2 h-2 bg-aura-cyan rounded-full"
+                    animate={{
+                      x: [0, (Math.random() - 0.5) * 100],
+                      y: [0, (Math.random() - 0.5) * 100],
+                      opacity: [1, 0],
+                      scale: [1, 0],
+                    }}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                      delay: i * 0.2,
+                      ease: "easeOut"
+                    }}
+                  />
+                ))}
+              </div>
+
+              <div className="w-20 h-20 bg-gradient-to-br from-aura-cyan via-aura-purple to-pink-500 rounded-full blur-md opacity-80 group-hover:opacity-100 transition-opacity animate-pulse shadow-[0_0_30px_rgba(0,255,255,0.5)]" />
+              <div className="absolute top-2 w-16 h-16 bg-white/30 rounded-full backdrop-blur-sm border border-white/50 group-hover:scale-110 transition-transform" />
+
+              {/* Floating Label */}
+              <motion.span
+                className="mt-2 text-xs font-bold text-white bg-black/60 px-3 py-1 rounded-full backdrop-blur-md border border-white/20"
+                animate={{ y: [0, -5, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
                 {crystal.dist}m
-              </span>
+              </motion.span>
             </button>
-          </div>
+          </motion.div>
         ))}
 
         {/* Bottom Controls */}
