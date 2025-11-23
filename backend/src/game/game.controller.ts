@@ -3,6 +3,8 @@ import { AuthService } from '../auth/auth.service';
 import { AntiCheatService } from '../anticheat/anticheat.service';
 import { Model } from 'mongoose';
 import { RedisService } from '../redis/redis.service';
+import { ClaimRewardDto } from './dto/claim-reward.dto';
+import { ResolvePvPDto } from './dto/resolve-pvp.dto';
 
 @Controller('game')
 export class GameController {
@@ -14,7 +16,7 @@ export class GameController {
     ) { }
 
     @Post('claim')
-    async claimReward(@Body() data: any) {
+    async claimReward(@Body() data: ClaimRewardDto) {
         // 1. Validate Signature (Proof of Identity)
         // In a real app, use a Guard. For MVP, manual check to match user's request.
         const isValidSig = await this.authService.validateWeb3Signature(
@@ -56,7 +58,7 @@ export class GameController {
         return { success: true, reward: crystal };
     }
     @Post('pvp/resolve')
-    async resolvePvP(@Body() data: any) {
+    async resolvePvP(@Body() data: ResolvePvPDto) {
         // 1. Validate Signature
         const isValidSig = await this.authService.validateWeb3Signature(
             data.address,
