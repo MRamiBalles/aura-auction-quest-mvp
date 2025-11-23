@@ -1,14 +1,15 @@
-import { Controller, Post, Body, UseGuards, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, BadRequestException, Inject } from '@nestjs/common';
 import { AuthService } from '../auth/auth.service';
 import { AntiCheatService } from '../anticheat/anticheat.service';
-import { Inject } from '@nestjs/common';
 import { Model } from 'mongoose';
+import { RedisService } from '../redis/redis.service';
 
 @Controller('game')
 export class GameController {
     constructor(
         private authService: AuthService,
         private antiCheatService: AntiCheatService,
+        private redisService: RedisService,
         @Inject('USER_MODEL') private userModel: Model<any>,
     ) { }
 
@@ -32,6 +33,9 @@ export class GameController {
         if (!movementValid.valid) {
             throw new BadRequestException(`Cheating Detected: ${movementValid.reason}`);
         }
+
+        // Cache valid location in Redis for high-frequency access (e.g. "Nearby Players" feature)
+        await this.redisService.setPlayerLocation(data.address, data.currLat, data.currLon);
 
         // 3. Award Reward (Update Inventory)
         // Add a random crystal to the user's inventory
