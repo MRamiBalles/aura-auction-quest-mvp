@@ -21,12 +21,15 @@ const achievements = [
   { id: 4, name: "Walking Legend", description: "Walk 100km total", icon: "👟", unlocked: false },
 ];
 
+import { useInventory } from "@/contexts/InventoryContext";
+
 const ProfileInventory = ({ onBack }: ProfileInventoryProps) => {
+  const { items } = useInventory();
   const stats = {
     level: 15,
     totalSteps: 142350,
     totalEarnings: 1247.80,
-    nftsFound: 23,
+    nftsFound: items.length,
     pvpWins: 12,
     rank: "Gold Hunter",
   };
@@ -99,25 +102,29 @@ const ProfileInventory = ({ onBack }: ProfileInventoryProps) => {
         {/* NFT Inventory */}
         <div className="space-y-3">
           <h3 className="text-sm font-bold text-muted-foreground flex items-center gap-2">
-            <Sparkles className="w-4 h-4" /> NFT Inventory ({nftInventory.length})
+            <Sparkles className="w-4 h-4" /> NFT Inventory ({items.length})
           </h3>
           <div className="grid grid-cols-2 gap-3">
-            {nftInventory.map((nft, index) => (
+            {items.map((item, index) => (
               <motion.div
-                key={nft.id}
+                key={item.id}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.1 }}
               >
                 <Card className="p-4 bg-card/50 hover:bg-card/70 cursor-pointer transition-all border-primary/20 group">
-                  <div className="text-5xl mb-2 group-hover:scale-110 transition-transform">{nft.image}</div>
+                  <div className="text-5xl mb-2 group-hover:scale-110 transition-transform">
+                    {item.type === 'crystal' ? '🔮' : '🏺'}
+                  </div>
                   <div className="space-y-1">
-                    <div className="font-bold text-sm line-clamp-1">{nft.name}</div>
+                    <div className="font-bold text-sm line-clamp-1">
+                      {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)} {item.type === 'crystal' ? 'Crystal' : 'Artifact'}
+                    </div>
                     <div className="flex items-center justify-between text-xs">
-                      <span className={`${nft.rarity === "Legendary" ? "text-accent" : nft.rarity === "Epic" ? "text-secondary" : "text-primary"}`}>
-                        {nft.rarity}
+                      <span className={`${item.rarity === "legendary" ? "text-accent" : item.rarity === "rare" ? "text-secondary" : "text-primary"}`}>
+                        {item.rarity}
                       </span>
-                      <span className="font-bold">{nft.value}</span>
+                      <span className="font-bold">${item.value}</span>
                     </div>
                   </div>
                 </Card>

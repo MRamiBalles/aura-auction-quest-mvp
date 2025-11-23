@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Wallet, ArrowUpRight, ArrowDownLeft, Coins } from "lucide-react";
 import { useWeb3 } from '@/contexts/Web3Context';
 import { toast } from "sonner";
+import { ethers } from 'ethers';
+import { logError } from '@/utils/logger';
 
 const WalletDashboard = () => {
   const { account, balance, connectWallet, isConnecting, chainId } = useWeb3();
@@ -13,8 +15,27 @@ const WalletDashboard = () => {
       toast.error("Please connect your wallet first!");
       return;
     }
-    // Simulation of a mint transaction
-    toast.success("Minting Aura Crystal... (Simulation)");
+
+    try {
+      toast.info("Initiating Mint Transaction...");
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+
+      // Send a 0 MATIC transaction to self to simulate a contract interaction
+      const tx = await signer.sendTransaction({
+        to: account,
+        value: ethers.parseEther("0.0"),
+        data: "0x1234" // Dummy data to look like a function call
+      });
+
+      toast.success("Transaction Sent! Waiting for confirmation...");
+      await tx.wait();
+      toast.success(`Mint Successful! Hash: ${tx.hash.slice(0, 10)}...`);
+      logError("Wallet:Mint", `Success: ${tx.hash}`);
+    } catch (err: any) {
+      logError("Wallet:Mint", err);
+      toast.error("Mint Failed: " + (err.reason || err.message));
+    }
   };
 
   return (

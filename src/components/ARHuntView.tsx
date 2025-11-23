@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Crosshair, MapPin, Camera, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { logError } from '@/utils/logger';
+import { useInventory } from '@/contexts/InventoryContext';
 
 const ARHuntView = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -70,9 +71,18 @@ const ARHuntView = () => {
     setCrystals(prev => [...prev.slice(-2), newCrystal]); // Keep max 3
   };
 
+  const { addItem } = useInventory();
+
   const handleCapture = (id: number) => {
     toast.success(`Crystal #${id} Captured! +50 AURA`);
     setCrystals(prev => prev.filter(c => c.id !== id));
+    addItem({
+      id: Date.now(),
+      type: 'crystal',
+      rarity: Math.random() > 0.9 ? 'legendary' : (Math.random() > 0.6 ? 'rare' : 'common'),
+      value: Math.floor(Math.random() * 100),
+      timestamp: Date.now()
+    });
   };
 
   return (

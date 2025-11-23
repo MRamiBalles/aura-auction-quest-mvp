@@ -8,18 +8,22 @@ import Index from "./pages/Index";
 
 const queryClient = new QueryClient();
 
+import { InventoryProvider } from "./contexts/InventoryContext";
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <Web3Provider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <InventoryProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </InventoryProvider>
     </Web3Provider>
   </QueryClientProvider>
 );
