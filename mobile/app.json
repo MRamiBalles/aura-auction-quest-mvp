@@ -1,0 +1,67 @@
+{
+    "expo": {
+        "name": "Aura Quest",
+        "slug": "aura-quest-mobile",
+        "version": "1.0.0",
+        "orientation": "portrait",
+        "icon": "./assets/icon.png",
+        "userInterfaceStyle": "dark",
+        "scheme": "auraquest",
+        "splash": {
+            "image": "./assets/splash.png",
+            "resizeMode": "contain",
+            "backgroundColor": "#0a0a0a"
+        },
+        "assetBundlePatterns": [
+            "**/*"
+        ],
+        "ios": {
+            "supportsTablet": true,
+            "bundleIdentifier": "com.auraquest.mobile",
+            "infoPlist": {
+                "NSCameraUsageDescription": "Aura Quest needs camera access for AR crystal hunting",
+                "NSLocationWhenInUseUsageDescription": "Aura Quest needs your location to find nearby crystals",
+                "NSLocationAlwaysAndWhenInUseUsageDescription": "Aura Quest needs background location to discover crystals while you walk",
+                "UIBackgroundModes": [
+                    "location"
+                ]
+            }
+        },
+        "android": {
+            "adaptiveIcon": {
+                "foregroundImage": "./assets/adaptive-icon.png",
+                "backgroundColor": "#0a0a0a"
+            },
+            "package": "com.auraquest.mobile",
+            "permissions": [
+                "ACCESS_COARSE_LOCATION",
+                "ACCESS_FINE_LOCATION",
+                "ACCESS_BACKGROUND_LOCATION",
+                "CAMERA",
+                "INTERNET"
+            ]
+        },
+        "web": {
+            "favicon": "./assets/favicon.png"
+        },
+        "plugins": [
+            [
+                "expo-location",
+                {
+                    "locationAlwaysAndWhenInUsePermission": "Allow Aura Quest to use your location for crystal hunting."
+                }
+            ],
+            [
+                "expo-camera",
+                {
+                    "cameraPermission": "Allow Aura Quest to access your camera for AR features."
+                }
+            ]
+        ],
+        "extra": {
+            "eas": {
+                "projectId": "your-project-id-here"
+            }
+        }
+    }
+}
