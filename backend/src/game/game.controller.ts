@@ -51,4 +51,42 @@ export class GameController {
 
         return { success: true, reward: crystal };
     }
+    @Post('pvp/resolve')
+    async resolvePvP(@Body() data: any) {
+        // 1. Validate Signature
+        const isValidSig = await this.authService.validateWeb3Signature(
+            data.address,
+            data.signature,
+            data.message
+        );
+        if (!isValidSig) throw new BadRequestException('Invalid Signature');
+
+        // 2. Determine Winner (Server-Side Logic)
+        // In a real app, this would check player stats, equipment, etc.
+        // For MVP, we use a weighted random based on "level" (mocked)
+        const playerWinChance = 0.5; // 50/50 base chance
+        const isPlayerWinner = Math.random() < playerWinChance;
+
+        const winner = isPlayerWinner ? 'player' : 'opponent';
+
+        // 3. Award Reward if Player Wins
+        let reward = null;
+        if (isPlayerWinner) {
+            reward = {
+                itemId: Date.now(),
+                type: 'artifact',
+                rarity: 'epic',
+                value: 500,
+                acquiredAt: new Date()
+            };
+
+            await this.userModel.updateOne(
+                { address: data.address },
+                { $push: { inventory: reward } },
+                { upsert: true }
+            );
+        }
+
+        return { success: true, winner, reward };
+    }
 }

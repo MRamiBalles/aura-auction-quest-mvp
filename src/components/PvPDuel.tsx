@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Swords, Trophy, Zap, X, TrendingUp } from "lucide-react";
+import { api } from "@/services/api";
 
 interface PvPDuelProps {
   onComplete: () => void;
@@ -31,12 +32,44 @@ const PvPDuel = ({ onComplete, onBack }: PvPDuelProps) => {
     }
   }, [phase]);
 
+  // Mock address - get from Web3Context in prod
+  const address = "0x123...mock";
+
   useEffect(() => {
     if (myProgress >= 100 || opponentProgress >= 100) {
-      setPhase("result");
-      setWinner(myProgress >= 100 ? "player" : "opponent");
+      if (phase !== "result") {
+        setPhase("result");
+        resolveDuel();
+      }
     }
   }, [myProgress, opponentProgress]);
+
+  const resolveDuel = async () => {
+    try {
+      // In MVP, we trigger the resolution when the animation finishes
+      // In a real app, the backend would stream the state
+      const signature = "0xsignature...";
+      const message = "Resolve PvP Duel";
+
+      const result = await api.game.resolvePvP({
+        address,
+        signature,
+        message
+      });
+
+      setWinner(result.winner);
+
+      if (result.winner === 'player' && result.reward) {
+        // Add to local inventory context if needed, or just rely on fetch
+        console.log("Won reward:", result.reward);
+      }
+
+    } catch (error) {
+      console.error("Duel resolution failed:", error);
+      // Fallback for demo if backend fails
+      setWinner(myProgress >= 100 ? "player" : "opponent");
+    }
+  };
 
   return (
     <div className="min-h-screen p-6 pb-24 relative">
@@ -184,7 +217,7 @@ const PvPDuel = ({ onComplete, onBack }: PvPDuelProps) => {
                 {winner === "player" ? "Victory!" : "Defeat"}
               </h2>
               <p className="text-muted-foreground">
-                {winner === "player" 
+                {winner === "player"
                   ? "You outpaced your opponent and claimed the NFT!"
                   : "Your opponent was faster this time. Try again!"}
               </p>
