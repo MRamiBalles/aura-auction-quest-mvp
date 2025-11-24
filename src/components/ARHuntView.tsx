@@ -17,7 +17,12 @@ interface Crystal {
   dist: number;
 }
 
-const ARHuntView = () => {
+interface ARHuntViewProps {
+  onComplete: () => void;
+  onBack: () => void;
+}
+
+const ARHuntView = ({ onComplete, onBack }: ARHuntViewProps) => {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [crystals, setCrystals] = useState<Crystal[]>([]);
@@ -152,6 +157,9 @@ const ARHuntView = () => {
           <div className="flex flex-col gap-2 pointer-events-auto">
             <Button size="icon" variant="outline" className="bg-black/50 border-aura-purple/50 text-aura-purple hover:bg-aura-purple/20" onClick={spawnCrystal}>
               <RefreshCw className="w-4 h-4" />
+            </Button>
+            <Button size="icon" variant="destructive" className="bg-red-500/20 border-red-500/50 text-red-500 hover:bg-red-500/40" onClick={onBack}>
+              <X className="w-4 h-4" />
             </Button>
           </div>
         </div>
