@@ -55,7 +55,7 @@ describe('Game Integration Flows', () => {
                 <Web3Provider>
                     <InventoryProvider>
                         <SoundProvider>
-                            <ARHuntView />
+                            <ARHuntView onComplete={() => {}} onBack={() => {}} />
                         </SoundProvider>
                     </InventoryProvider>
                 </Web3Provider>

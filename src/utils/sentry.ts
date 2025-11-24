@@ -20,14 +20,7 @@ export function initSentry() {
 
             // Performance Monitoring
             integrations: [
-                Sentry.browserTracingIntegration({
-                    // Trace all route changes
-                    useEffect: React.useEffect,
-                    useLocation,
-                    useNavigationType,
-                    createRoutesFromChildren,
-                    matchRoutes
-                }),
+                Sentry.browserTracingIntegration(),
                 Sentry.replayIntegration({
                     // Session Replay for debugging
                     maskAllText: true, // Privacy: mask all text
