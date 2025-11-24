@@ -1,7 +1,4 @@
 import * as Sentry from "@sentry/react";
-import { BrowserTracing } from "@sentry/tracing";
-import React from "react";
-import { useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from "react-router-dom";
 
 /**
  * Sentry Configuration for React Frontend
@@ -21,17 +18,8 @@ export function initSentry() {
 
             // Performance Monitoring
             integrations: [
-                new BrowserTracing({
-                    // Trace all route changes
-                    routingInstrumentation: Sentry.reactRouterV6Instrumentation(
-                        React.useEffect,
-                        useLocation,
-                        useNavigationType,
-                        createRoutesFromChildren,
-                        matchRoutes
-                    ),
-                }),
-                new Sentry.Replay({
+                Sentry.browserTracingIntegration(),
+                Sentry.replayIntegration({
                     // Session Replay for debugging
                     maskAllText: true, // Privacy: mask all text
                     blockAllMedia: true, // Privacy: block all media
