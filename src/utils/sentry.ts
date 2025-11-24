@@ -1,5 +1,7 @@
 import * as Sentry from "@sentry/react";
 import { BrowserTracing } from "@sentry/tracing";
+import React from "react";
+import { useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from "react-router-dom";
 
 /**
  * Sentry Configuration for React Frontend

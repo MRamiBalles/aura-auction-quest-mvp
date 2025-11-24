@@ -9,6 +9,7 @@ interface Web3ContextType {
     connectWallet: () => Promise<void>;
     isConnecting: boolean;
     error: string | null;
+    isConnected: boolean;
 }
 
 const Web3Context = createContext<Web3ContextType | undefined>(undefined);
@@ -124,7 +125,15 @@ export const Web3Provider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     return (
-        <Web3Context.Provider value={{ account, balance, chainId, connectWallet, isConnecting, error }}>
+        <Web3Context.Provider value={{
+            account,
+            balance,
+            chainId,
+            connectWallet,
+            isConnecting,
+            error,
+            isConnected: !!account
+        }}>
             {children}
         </Web3Context.Provider>
     );

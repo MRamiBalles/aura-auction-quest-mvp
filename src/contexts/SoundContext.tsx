@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useRef, useState, useEffect } from 'react';
 
-type SoundType = 'click' | 'success' | 'error' | 'capture' | 'spawn' | 'mint';
+type SoundType = 'click' | 'success' | 'error' | 'capture' | 'spawn' | 'mint' | 'scan' | 'collect' | 'bid';
 
 interface SoundContextType {
     playSound: (type: SoundType) => void;
@@ -100,6 +100,36 @@ export const SoundProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
                 osc.start(now);
                 osc.stop(now + 0.6);
+                break;
+
+            case 'scan':
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.linearRampToValueAtTime(800, now + 0.1);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+                break;
+
+            case 'collect':
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+                break;
+
+            case 'bid':
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.linearRampToValueAtTime(500, now + 0.2);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
                 break;
         }
     };
