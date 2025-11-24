@@ -29,13 +29,13 @@ const Index = () => {
       case "map":
         return <MapView onStartHunt={() => setCurrentView("hunt")} onStartPvP={() => setCurrentView("pvp")} />;
       case "hunt":
-        return <ARHuntView onComplete={() => setCurrentView("marketplace")} onBack={() => setCurrentView("map")} />;
+        return <ARHuntView />;
       case "pvp":
         return <PvPDuel onComplete={() => setCurrentView("marketplace")} onBack={() => setCurrentView("map")} />;
       case "marketplace":
         return <Marketplace onBack={() => setCurrentView("map")} />;
       case "wallet":
-        return <WalletDashboard onBack={() => setCurrentView("map")} />;
+        return <WalletDashboard />;
       case "profile":
         return <ProfileInventory onBack={() => setCurrentView("map")} />;
       case "roadmap":
