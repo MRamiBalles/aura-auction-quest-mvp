@@ -6,23 +6,29 @@ import { useWeb3 } from "@/contexts/Web3Context";
 import { useSound } from "@/contexts/SoundContext";
 import { toast } from "sonner";
 import { ethers } from "ethers";
-
 interface WalletDashboardProps {
   onBack: () => void;
 }
-
-const WalletDashboard = ({ onBack }: WalletDashboardProps) => {
-  const { account, connectWallet, isConnecting, balance, chainId } = useWeb3();
-  const { playSound } = useSound();
+const WalletDashboard = ({
+  onBack
+}: WalletDashboardProps) => {
+  const {
+    account,
+    connectWallet,
+    isConnecting,
+    balance,
+    chainId
+  } = useWeb3();
+  const {
+    playSound
+  } = useSound();
   const [isMinting, setIsMinting] = useState(false);
-
   const handleMint = async () => {
     if (!account) {
       toast.error("Connect wallet first!");
       playSound('error');
       return;
     }
-
     setIsMinting(true);
     try {
       // Simulate minting delay
@@ -42,9 +48,7 @@ const WalletDashboard = ({ onBack }: WalletDashboardProps) => {
       setIsMinting(false);
     }
   };
-
-  return (
-    <div className="min-h-screen p-6 pb-24">
+  return <div className="min-h-screen p-6 pb-24">
       <div className="max-w-md mx-auto space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -58,14 +62,9 @@ const WalletDashboard = ({ onBack }: WalletDashboardProps) => {
         </div>
 
         <div className="flex justify-end mb-4">
-          <Button
-            variant={account ? "outline" : "default"}
-            className={account ? "border-aura-cyan text-aura-cyan" : "bg-aura-cyan text-black hover:bg-aura-cyan/80"}
-            onClick={connectWallet}
-            disabled={isConnecting}
-          >
+          <Button variant={account ? "outline" : "default"} onClick={connectWallet} disabled={isConnecting} className="rounded-lg shadow-xl">
             <Wallet className="w-4 h-4 mr-2" />
-            {account ? `${account.slice(0, 6)}...${account.slice(-4)}` : (isConnecting ? "Connecting..." : "Connect Wallet")}
+            {account ? `${account.slice(0, 6)}...${account.slice(-4)}` : isConnecting ? "Connecting..." : "Connect Wallet"}
           </Button>
         </div>
 
@@ -110,8 +109,7 @@ const WalletDashboard = ({ onBack }: WalletDashboardProps) => {
         <div>
           <h3 className="text-lg font-semibold text-white mb-4">Recent Activity</h3>
           <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10">
+            {[1, 2, 3].map(i => <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-full bg-aura-cyan/20 text-aura-cyan">
                     <Coins className="w-4 h-4" />
@@ -122,13 +120,10 @@ const WalletDashboard = ({ onBack }: WalletDashboardProps) => {
                   </div>
                 </div>
                 <span className="text-aura-cyan font-medium">+500 AURA</span>
-              </div>
-            ))}
+              </div>)}
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default WalletDashboard;
