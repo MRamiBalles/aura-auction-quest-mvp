@@ -1,5 +1,4 @@
 import * as Sentry from "@sentry/react";
-
 import React from "react";
 import { useLocation, useNavigationType, createRoutesFromChildren, matchRoutes } from "react-router-dom";
 
@@ -83,6 +82,22 @@ export function initSentry() {
     } else {
         console.warn('⚠️  Sentry DSN not configured');
     }
+}
+
+/**
+ * Log a security-relevant event to Sentry with high priority.
+ * @param type - The type of security event (e.g., 'auth_failure', 'anticheat_flag')
+ * @param details - Additional context
+ */
+export function logSecurityEvent(type: string, details: Record<string, any>) {
+    Sentry.withScope((scope) => {
+        scope.setLevel("warning");
+        scope.setTag("security_event", "true");
+        scope.setTag("event_type", type);
+        Sentry.captureMessage(`Security Event: ${type}`, {
+            extra: details
+        });
+    });
 }
 
 /**
