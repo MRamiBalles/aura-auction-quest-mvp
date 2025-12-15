@@ -63,7 +63,7 @@ const Index = () => {
       case "wallet":
         return <WalletDashboard onBack={() => setCurrentView("map")} />;
       case "profile":
-        return <ProfileInventory />;
+        return <ProfileInventory onBack={() => setCurrentView("map")} />;
       case "landlords":
         return <LandlordsView onBack={() => setCurrentView("map")} />;
       case "map":

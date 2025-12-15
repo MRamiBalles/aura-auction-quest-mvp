@@ -1,12 +1,19 @@
-import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
-import { AnalyticsService } from './analytics.service';
-
 /**
  * 📊 Analytics API Endpoints
  * 
- * Dashboard and metrics endpoints for admin panel
+ * Dashboard and metrics endpoints for admin panel.
+ * All endpoints require JWT authentication.
+ * Sensitive endpoints require admin role.
+ * 
+ * @author Security Team
+ * @version 2.0.0 - Added JWT authentication
  */
+import { Controller, Get, Post, Body, Param, Query, UseGuards, Request, ForbiddenException } from '@nestjs/common';
+import { AnalyticsService } from './analytics.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+
 @Controller('analytics')
+@UseGuards(JwtAuthGuard)  // Require authentication for all analytics endpoints
 export class AnalyticsController {
     constructor(private readonly analyticsService: AnalyticsService) { }
 
