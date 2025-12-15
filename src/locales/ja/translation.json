@@ -34,5 +34,31 @@
         "build_desc": "クリスタルやアーティファクトを集めましょう。マーケットプレイスで取引したり、アップグレードの作成に使用したりできます。",
         "next": "次へ",
         "start_hunting": "ハント開始！"
+    },
+    "marketplace": {
+        "title": "ライブオークション",
+        "live_badge": "ライブ",
+        "bidders": "入札者",
+        "current_bid": "現在の入札額",
+        "time_remaining": "残り時間",
+        "next_bid": "次の入札",
+        "place_bid": "入札する",
+        "bid_placed": "入札しました！ 🎉",
+        "winning_title": "あなたがリード中！",
+        "winning_desc": "この{{rarity}} NFTを獲得するために維持しましょう。他も入札しています！ 🔥",
+        "more_auctions": "その他のオークション",
+        "todays_market": "今日の市場",
+        "total_volume": "総取引高",
+        "avg_price": "平均販売価格",
+        "active_auctions": "アクティブなオークション"
+    },
+    "hunt": {
+        "gps_waiting": "GPS信号を待機中...",
+        "no_wallet": "ウォレットが見つかりません",
+        "collected": "クリスタルを獲得しました！",
+        "capture_failed": "キャプチャに失敗しました",
+        "camera_permission": "ARハントにはカメラの許可が必要です",
+        "acquiring_gps": "GPS取得中...",
+        "scanning": "エリアをスキャン中..."
     }
 }

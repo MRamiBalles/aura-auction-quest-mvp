@@ -9,6 +9,7 @@ import { useSound } from '@/contexts/SoundContext';
 import { api } from '@/services/api';
 import { useWeb3 } from '@/contexts/Web3Context';
 import { ethers } from 'ethers';
+import { useTranslation } from 'react-i18next';
 
 interface Crystal {
   id: number;
@@ -23,6 +24,7 @@ interface ARHuntViewProps {
 }
 
 const ARHuntView = ({ onComplete, onBack }: ARHuntViewProps) => {
+  const { t } = useTranslation();
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [crystals, setCrystals] = useState<Crystal[]>([]);
@@ -84,12 +86,12 @@ const ARHuntView = ({ onComplete, onBack }: ARHuntViewProps) => {
 
   const handleCapture = async (crystalId: number) => {
     if (!location) {
-      toast.error("Waiting for GPS signal...");
+      toast.error(t('hunt.gps_waiting'));
       return;
     }
 
     try {
-      if (!window.ethereum) throw new Error("No wallet found");
+      if (!window.ethereum) throw new Error(t('hunt.no_wallet'));
 
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
@@ -112,11 +114,11 @@ const ARHuntView = ({ onComplete, onBack }: ARHuntViewProps) => {
         playSound('collect');
         addItem(result.reward);
         setCrystals(prev => prev.filter(c => c.id !== crystalId));
-        toast.success("Crystal collected!");
+        toast.success(t('hunt.collected'));
       }
     } catch (error) {
       console.error(error);
-      toast.error("Failed to capture crystal");
+      toast.error(t('hunt.capture_failed'));
     }
   };
 
@@ -124,7 +126,7 @@ const ARHuntView = ({ onComplete, onBack }: ARHuntViewProps) => {
     <div className="relative w-full h-screen bg-black overflow-hidden">
       {hasPermission === false ? (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-900 text-white">
-          <p>Camera permission required for AR Hunt</p>
+          <p>{t('hunt.camera_permission')}</p>
         </div>
       ) : (
         <video
@@ -149,7 +151,7 @@ const ARHuntView = ({ onComplete, onBack }: ARHuntViewProps) => {
                     LAT: {location.coords.latitude.toFixed(4)}<br />
                     LNG: {location.coords.longitude.toFixed(4)}
                   </>
-                ) : "Acquiring GPS..."}
+                ) : t('hunt.acquiring_gps')}
               </div>
             </div>
           </Card>
@@ -228,7 +230,7 @@ const ARHuntView = ({ onComplete, onBack }: ARHuntViewProps) => {
           <Button
             size="lg"
             className="rounded-full w-16 h-16 bg-white/20 border-2 border-white/50 hover:bg-white/30 backdrop-blur-sm"
-            onClick={() => toast.info("Scanning area...")}
+            onClick={() => toast.info(t('hunt.scanning'))}
           >
             <Camera className="w-8 h-8 text-white" />
           </Button>
