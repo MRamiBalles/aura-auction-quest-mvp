@@ -43,6 +43,10 @@ const RATE_LIMIT_MAX_REQUESTS = 5;
 const VELOCITY_CHECK_WINDOW_MS = 60000;
 const MAX_DISTANCE_METERS = 50000;
 
+// Grid normalization: must match PARCEL_SIZE in LandRegistry.sol (100 meters)
+// Coordinates are in int64 format (multiply by 1e6), so 100m ≈ 0.0009 degrees ≈ 900 units
+const PARCEL_SIZE_UNITS = 900; // ~100 meters in int64 coordinate format
+
 @Controller('api/landlords')
 @UseGuards(JwtAuthGuard)
 export class LandlordsController {
@@ -129,6 +133,25 @@ export class LandlordsController {
     }
 
     /**
+     * Check if parcel has already been claimed recently (cache-based check)
+     * Note: This is a UX optimization - the smart contract is the source of truth
+     */
+    private async checkDuplicateClaim(latitude: number, longitude: number): Promise<void> {
+        const coordHash = `${latitude}:${longitude}`;
+        const key = `claimed_parcel:${coordHash}`;
+        const existingClaim = await this.redisService.get(key);
+
+        if (existingClaim) {
+            throw new BadRequestException(
+                `Parcel at (${latitude / 1e6}, ${longitude / 1e6}) was recently claimed. Check blockchain for current status.`
+            );
+        }
+
+        // Mark as pending claim for 10 minutes (prevents spam)
+        await this.redisService.set(key, 'pending', 600);
+    }
+
+    /**
      * Generates a signed message proving the user was at the specified GPS location.
      * This signature is verified on-chain by LandRegistry.claimParcel()
      * 
@@ -165,20 +188,34 @@ export class LandlordsController {
             throw new BadRequestException('Invalid longitude');
         }
 
+        // SECURITY: Validate coordinate precision (prevent excessive decimal places)
+        if (!Number.isInteger(latitude) || !Number.isInteger(longitude)) {
+            throw new BadRequestException('Coordinates must be integers in int64 format');
+        }
+
+        // SECURITY: Grid normalization - align to parcel grid
+        // This ensures coordinates match the smart contract's parcel grid
+        const normalizedLatitude = Math.floor(latitude / PARCEL_SIZE_UNITS) * PARCEL_SIZE_UNITS;
+        const normalizedLongitude = Math.floor(longitude / PARCEL_SIZE_UNITS) * PARCEL_SIZE_UNITS;
+
         // SECURITY: Rate limiting
         await this.checkRateLimit(userAddress);
 
         // SECURITY: Velocity check (anti-teleportation)
-        await this.checkVelocity(userAddress, latitude, longitude);
+        await this.checkVelocity(userAddress, normalizedLatitude, normalizedLongitude);
+
+        // SECURITY: Check for duplicate parcel claims (cache-based)
+        await this.checkDuplicateClaim(normalizedLatitude, normalizedLongitude);
 
         // Create message hash (must match format in LandRegistry.sol)
+        // SECURITY: Use normalized coordinates for consistent grid alignment
         const timestamp = Math.floor(Date.now() / 1000);
         const expiresAt = timestamp + 300; // 5 minutes
 
-        // Pack the message the same way Solidity expects
+        // Pack the message the same way Solidity expects (using normalized coordinates)
         const messageHash = ethers.solidityPackedKeccak256(
             ['address', 'int64', 'int64', 'uint256'],
-            [userAddress, latitude, longitude, expiresAt]
+            [userAddress, normalizedLatitude, normalizedLongitude, expiresAt]
         );
 
         // Create Ethereum signed message (adds prefix)
@@ -186,7 +223,7 @@ export class LandlordsController {
 
         return {
             signature,
-            message: `Claim at (${latitude / 1e6}, ${longitude / 1e6})`,
+            message: `Claim at grid (${normalizedLatitude / 1e6}, ${normalizedLongitude / 1e6})`,
             expiresAt: expiresAt * 1000, // Convert to milliseconds for JS
         };
     }
