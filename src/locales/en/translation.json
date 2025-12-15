@@ -1,0 +1,23 @@
+{
+    "app": {
+        "title": "AuraAuction Quest",
+        "loading": "Loading...",
+        "error": "An error occurred"
+    },
+    "nav": {
+        "home": "Home",
+        "marketplace": "Marketplace",
+        "profile": "Profile",
+        "wallet": "Wallet"
+    },
+    "auth": {
+        "login": "Login",
+        "signup": "Sign Up",
+        "logout": "Logout"
+    },
+    "quest": {
+        "start": "Start Quest",
+        "complete": "Complete",
+        "rewards": "Rewards"
+    }
+}
