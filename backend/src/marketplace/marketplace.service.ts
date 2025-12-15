@@ -132,4 +132,32 @@ export class MarketplaceService {
             throw new BadRequestException('Signature verification failed');
         }
     }
+
+    /**
+     * 🔒 FIX P2-1: Invalidate a listing (called by cleanup service)
+     * Marks a listing as inactive when seller no longer owns the NFT
+     */
+    async invalidateListing(listingId: number, reason: string = 'NFT transferred'): Promise<boolean> {
+        const listing = this.listings.find(l => l.id === listingId);
+        if (!listing || !listing.active) {
+            return false;
+        }
+
+        listing.active = false;
+        // In production with MongoDB, you'd also add a 'invalidatedReason' field
+        // and emit an event or log for analytics
+
+        return true;
+    }
+
+    /**
+     * 🔒 FIX P2-1: Find listings by NFT contract and token
+     */
+    getListingsByNFT(nftContract: string, tokenId: number): Listing[] {
+        return this.listings.filter(
+            l => l.nftContract.toLowerCase() === nftContract.toLowerCase() &&
+                l.tokenId === tokenId &&
+                l.active
+        );
+    }
 }
