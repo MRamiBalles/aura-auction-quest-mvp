@@ -6,9 +6,12 @@
     },
     "nav": {
         "home": "Home",
-        "marketplace": "Marketplace",
-        "profile": "Profile",
-        "wallet": "Wallet"
+        "map": "Map",
+        "hunt": "Hunt",
+        "pvp": "PvP",
+        "market": "Market",
+        "wallet": "Wallet",
+        "profile": "Profile"
     },
     "auth": {
         "login": "Login",
@@ -19,5 +22,17 @@
         "start": "Start Quest",
         "complete": "Complete",
         "rewards": "Rewards"
+    },
+    "tutorial": {
+        "welcome_title": "Welcome to Aura World",
+        "welcome_desc": "Explore the real world to find hidden digital treasures. Connect your wallet to start your journey.",
+        "find_title": "Find Crystals",
+        "find_desc": "Walk around your neighborhood. When you see a Crystal on the map, get close to it!",
+        "ar_title": "AR Capture",
+        "ar_desc": "Tap 'AR Hunt' to open your camera. Find the floating crystal and tap it to claim your reward.",
+        "build_title": "Build Your Collection",
+        "build_desc": "Collect Crystals and Artifacts. Trade them on the marketplace or use them to craft upgrades.",
+        "next": "Next",
+        "start_hunting": "Start Hunting!"
     }
 }

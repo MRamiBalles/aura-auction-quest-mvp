@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { MapPin, Camera, Package, X } from 'lucide-react';
 import { useWeb3 } from '@/contexts/Web3Context';
+import { useTranslation } from 'react-i18next';
 
 const TutorialOverlay = () => {
+    const { t } = useTranslation();
     const [step, setStep] = useState(0);
     const [isVisible, setIsVisible] = useState(false);
     const { isConnected } = useWeb3();
@@ -34,23 +36,23 @@ const TutorialOverlay = () => {
 
     const steps = [
         {
-            title: "Welcome to Aura World",
-            description: "Explore the real world to find hidden digital treasures. Connect your wallet to start your journey.",
+            title: t('tutorial.welcome_title'),
+            description: t('tutorial.welcome_desc'),
             icon: <MapPin className="w-12 h-12 text-aura-cyan" />,
         },
         {
-            title: "Find Crystals",
-            description: "Walk around your neighborhood. When you see a Crystal on the map, get close to it!",
+            title: t('tutorial.find_title'),
+            description: t('tutorial.find_desc'),
             icon: <MapPin className="w-12 h-12 text-aura-purple" />,
         },
         {
-            title: "AR Capture",
-            description: "Tap 'AR Hunt' to open your camera. Find the floating crystal and tap it to claim your reward.",
+            title: t('tutorial.ar_title'),
+            description: t('tutorial.ar_desc'),
             icon: <Camera className="w-12 h-12 text-pink-500" />,
         },
         {
-            title: "Build Your Collection",
-            description: "Collect Crystals and Artifacts. Trade them on the marketplace or use them to craft upgrades.",
+            title: t('tutorial.build_title'),
+            description: t('tutorial.build_desc'),
             icon: <Package className="w-12 h-12 text-yellow-400" />,
         }
     ];
@@ -102,7 +104,7 @@ const TutorialOverlay = () => {
                             onClick={handleNext}
                             className="w-full bg-gradient-to-r from-aura-cyan to-aura-purple hover:opacity-90 font-bold"
                         >
-                            {step === steps.length - 1 ? "Start Hunting!" : "Next"}
+                            {step === steps.length - 1 ? t('tutorial.start_hunting') : t('tutorial.next')}
                         </Button>
                     </div>
                 </Card>

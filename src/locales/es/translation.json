@@ -6,9 +6,12 @@
     },
     "nav": {
         "home": "Inicio",
-        "marketplace": "Mercado",
-        "profile": "Perfil",
-        "wallet": "Billetera"
+        "map": "Mapa",
+        "hunt": "Cazar",
+        "pvp": "PvP",
+        "market": "Mercado",
+        "wallet": "Billetera",
+        "profile": "Perfil"
     },
     "auth": {
         "login": "Iniciar Sesión",
@@ -19,5 +22,17 @@
         "start": "Iniciar Misión",
         "complete": "Completar",
         "rewards": "Recompensas"
+    },
+    "tutorial": {
+        "welcome_title": "Bienvenido a Aura World",
+        "welcome_desc": "Explora el mundo real para encontrar tesoros digitales ocultos. Conecta tu billetera para comenzar.",
+        "find_title": "Encuentra Cristales",
+        "find_desc": "Camina por tu vecindario. Cuando veas un Cristal en el mapa, ¡acércate a él!",
+        "ar_title": "Captura AR",
+        "ar_desc": "Toca 'Cazar' para abrir tu cámara. Encuentra el cristal flotante y tócalo para reclamar tu recompensa.",
+        "build_title": "Construye tu Colección",
+        "build_desc": "Colecciona Cristales y Artefactos. Intercámbialos en el mercado o úsalos para crear mejoras.",
+        "next": "Siguiente",
+        "start_hunting": "¡A Cazar!"
     }
 }
