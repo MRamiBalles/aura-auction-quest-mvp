@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { X, CheckCircle2, Circle, Clock, Rocket } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface RoadmapProps {
   onBack: () => void;
@@ -110,6 +111,7 @@ const phases = [
 ];
 
 const Roadmap = ({ onBack }: RoadmapProps) => {
+  const { t } = useTranslation();
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed":
@@ -139,7 +141,7 @@ const Roadmap = ({ onBack }: RoadmapProps) => {
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold glow-text flex items-center gap-2">
             <Rocket className="w-6 h-6" />
-            Development Roadmap
+            {t('roadmap.title')}
           </h1>
           <Button variant="ghost" size="icon" onClick={onBack}>
             <X className="w-5 h-5" />
@@ -150,8 +152,8 @@ const Roadmap = ({ onBack }: RoadmapProps) => {
         <Card className="p-6 bg-gradient-to-br from-primary/20 to-secondary/20 border-primary/30">
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Overall Progress</span>
-              <span className="font-bold">33% Complete</span>
+              <span className="text-sm text-muted-foreground">{t('roadmap.progress')}</span>
+              <span className="font-bold">33% {t('roadmap.complete')}</span>
             </div>
             <div className="h-3 bg-muted rounded-full overflow-hidden">
               <motion.div
@@ -164,15 +166,15 @@ const Roadmap = ({ onBack }: RoadmapProps) => {
             <div className="flex items-center gap-4 text-sm">
               <div className="flex items-center gap-1">
                 <div className="w-3 h-3 bg-primary rounded-full" />
-                <span>3 Completed</span>
+                <span>3 {t('roadmap.completed_items')}</span>
               </div>
               <div className="flex items-center gap-1">
                 <div className="w-3 h-3 bg-accent rounded-full animate-pulse" />
-                <span>1 In Progress</span>
+                <span>1 {t('roadmap.in_progress')}</span>
               </div>
               <div className="flex items-center gap-1">
                 <div className="w-3 h-3 bg-muted rounded-full" />
-                <span>5 Upcoming</span>
+                <span>5 {t('roadmap.upcoming')}</span>
               </div>
             </div>
           </div>
@@ -207,7 +209,7 @@ const Roadmap = ({ onBack }: RoadmapProps) => {
                     )}
                     {phase.status === "completed" && (
                       <div className="px-2 py-1 bg-primary/20 rounded text-xs font-bold text-primary">
-                        COMPLETE
+                        {t('roadmap.status_complete')}
                       </div>
                     )}
                   </div>
@@ -239,17 +241,17 @@ const Roadmap = ({ onBack }: RoadmapProps) => {
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <Rocket className="w-6 h-6 text-accent" />
-              <h3 className="font-bold text-lg">Next Up: Backend Development</h3>
+              <h3 className="font-bold text-lg">{t('roadmap.next_up')}: Backend Development</h3>
             </div>
             <p className="text-sm text-muted-foreground">
               Complete wallet integration, then move to Phase 4 to build the Node.js API and integrate real blockchain functionality on Polygon testnet.
             </p>
             <div className="flex gap-2">
               <Button className="bg-gradient-to-r from-accent to-secondary hover:opacity-90 text-white">
-                View Phase 4 Details
+                {t('roadmap.view_phase')}
               </Button>
               <Button variant="outline">
-                Export Roadmap
+                {t('roadmap.export')}
               </Button>
             </div>
           </div>
@@ -259,15 +261,15 @@ const Roadmap = ({ onBack }: RoadmapProps) => {
         <div className="grid grid-cols-3 gap-4">
           <Card className="p-4 bg-card/50 text-center">
             <div className="text-2xl font-bold text-primary">6-8</div>
-            <div className="text-xs text-muted-foreground mt-1">Months to Launch</div>
+            <div className="text-xs text-muted-foreground mt-1">{t('roadmap.months_launch')}</div>
           </Card>
           <Card className="p-4 bg-card/50 text-center">
             <div className="text-2xl font-bold text-accent">$20M</div>
-            <div className="text-xs text-muted-foreground mt-1">Year 1 Target</div>
+            <div className="text-xs text-muted-foreground mt-1">{t('roadmap.year_target')}</div>
           </Card>
           <Card className="p-4 bg-card/50 text-center">
             <div className="text-2xl font-bold text-secondary">100k</div>
-            <div className="text-xs text-muted-foreground mt-1">Users Goal</div>
+            <div className="text-xs text-muted-foreground mt-1">{t('roadmap.users_goal')}</div>
           </Card>
         </div>
       </div>

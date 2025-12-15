@@ -5,13 +5,16 @@ import { Wallet, ArrowUpRight, ArrowDownLeft, Coins, X } from "lucide-react";
 import { useWeb3 } from "@/contexts/Web3Context";
 import { useSound } from "@/contexts/SoundContext";
 import { toast } from "sonner";
-import { ethers } from "ethers";
+import { useTranslation } from "react-i18next";
+
 interface WalletDashboardProps {
   onBack: () => void;
 }
+
 const WalletDashboard = ({
   onBack
 }: WalletDashboardProps) => {
+  const { t } = useTranslation();
   const {
     account,
     connectWallet,
@@ -23,9 +26,10 @@ const WalletDashboard = ({
     playSound
   } = useSound();
   const [isMinting, setIsMinting] = useState(false);
+
   const handleMint = async () => {
     if (!account) {
-      toast.error("Connect wallet first!");
+      toast.error(t('wallet.connect_first'));
       playSound('error');
       return;
     }
@@ -38,23 +42,25 @@ const WalletDashboard = ({
       // const tx = await contract.mint(account);
       // await tx.wait();
 
-      toast.success("Successfully minted 100 AURA!");
+      toast.success(t('wallet.mint_success'));
       playSound('mint');
     } catch (error) {
       console.error("Minting failed:", error);
-      toast.error("Minting failed. See console.");
+      toast.error(t('wallet.mint_error'));
       playSound('error');
     } finally {
       setIsMinting(false);
     }
   };
-  return <div className="min-h-screen p-6 pb-24">
+
+  return (
+    <div className="min-h-screen p-6 pb-24">
       <div className="max-w-md mx-auto space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold glow-text flex items-center gap-2">
             <Wallet className="w-6 h-6" />
-            Crypto Wallet
+            {t('wallet.title')}
           </h1>
           <Button variant="ghost" size="icon" onClick={onBack}>
             <X className="w-5 h-5" />
@@ -64,7 +70,7 @@ const WalletDashboard = ({
         <div className="flex justify-end mb-4">
           <Button variant={account ? "outline" : "default"} onClick={connectWallet} disabled={isConnecting} className="rounded-lg shadow-xl">
             <Wallet className="w-4 h-4 mr-2" />
-            {account ? `${account.slice(0, 6)}...${account.slice(-4)}` : isConnecting ? "Connecting..." : "Connect Wallet"}
+            {account ? `${account.slice(0, 6)}...${account.slice(-4)}` : isConnecting ? t('wallet.connecting') : t('wallet.connect')}
           </Button>
         </div>
 
@@ -72,7 +78,7 @@ const WalletDashboard = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card className="bg-black/40 border-aura-purple/30 backdrop-blur-md">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-400">Total Balance (MATIC)</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-400">{t('wallet.total_balance')} (MATIC)</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{balance ? parseFloat(balance).toFixed(4) : '0.0000'}</div>
@@ -84,7 +90,7 @@ const WalletDashboard = ({
 
           <Card className="bg-black/40 border-aura-cyan/30 backdrop-blur-md">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-400">Aura Tokens (Mock)</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-400">{t('wallet.aura_tokens')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">1,250.00</div>
@@ -97,33 +103,37 @@ const WalletDashboard = ({
         <div className="grid grid-cols-2 gap-4">
           <Button className="bg-aura-purple hover:bg-aura-purple/80 text-white" onClick={handleMint} disabled={isMinting}>
             <ArrowDownLeft className="w-4 h-4 mr-2" />
-            {isMinting ? "Minting..." : "Mint NFT"}
+            {isMinting ? t('wallet.minting') : t('wallet.mint_nft')}
           </Button>
           <Button variant="outline" className="border-white/10 hover:bg-white/5 text-white">
             <ArrowUpRight className="w-4 h-4 mr-2" />
-            Withdraw
+            {t('wallet.withdraw')}
           </Button>
         </div>
 
         {/* Transaction History */}
         <div>
-          <h3 className="text-lg font-semibold text-white mb-4">Recent Activity</h3>
+          <h3 className="text-lg font-semibold text-white mb-4">{t('wallet.recent_activity')}</h3>
           <div className="space-y-3">
-            {[1, 2, 3].map(i => <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-full bg-aura-cyan/20 text-aura-cyan">
                     <Coins className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-white">Auction Reward</p>
+                    <p className="text-sm font-medium text-white">{t('wallet.auction_reward')}</p>
                     <p className="text-xs text-gray-400">2 hours ago</p>
                   </div>
                 </div>
                 <span className="text-aura-cyan font-medium">+500 AURA</span>
-              </div>)}
+              </div>
+            ))}
           </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default WalletDashboard;

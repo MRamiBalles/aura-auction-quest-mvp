@@ -7,6 +7,7 @@ import { api } from "@/services/api";
 import { useWeb3 } from "@/contexts/Web3Context";
 import { ethers } from "ethers";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface PvPDuelProps {
   onComplete: () => void;
@@ -14,6 +15,7 @@ interface PvPDuelProps {
 }
 
 const PvPDuel = ({ onComplete, onBack }: PvPDuelProps) => {
+  const { t } = useTranslation();
   const [phase, setPhase] = useState<"matching" | "duel" | "resolving" | "result">("matching");
   const [myProgress, setMyProgress] = useState(0);
   const [opponentProgress, setOpponentProgress] = useState(0);
@@ -69,13 +71,13 @@ const PvPDuel = ({ onComplete, onBack }: PvPDuelProps) => {
 
     // If player "won" locally, we must verify with backend
     try {
-      if (!window.ethereum) throw new Error("No wallet found");
+      if (!window.ethereum) throw new Error(t('hunt.no_wallet')); // Reusing hunt key
 
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const message = `Resolve PvP Duel at ${Date.now()}`;
 
-      toast.info("Please sign to verify your victory...");
+      toast.info(t('pvp.sign_verify'));
       const signature = await signer.signMessage(message);
 
       const result = await api.game.resolvePvP({
@@ -88,9 +90,9 @@ const PvPDuel = ({ onComplete, onBack }: PvPDuelProps) => {
         setWinner(result.winner);
         setReward(result.reward);
         if (result.winner === 'player') {
-          toast.success("Victory verified! Reward claimed.");
+          toast.success(t('pvp.victory_verified'));
         } else {
-          toast.warning("Victory not verified by server.");
+          toast.warning(t('pvp.victory_failed'));
         }
       } else {
         throw new Error("Verification failed");
@@ -98,9 +100,9 @@ const PvPDuel = ({ onComplete, onBack }: PvPDuelProps) => {
     } catch (error: any) {
       console.error("PvP Error:", error);
       if (error.code === 4001) {
-        toast.error("Signature rejected. Duel forfeited.");
+        toast.error(t('pvp.sig_rejected'));
       } else {
-        toast.error("Failed to resolve duel. Please try again.");
+        toast.error(t('app.error'));
       }
       setWinner("opponent");
     } finally {
@@ -115,7 +117,7 @@ const PvPDuel = ({ onComplete, onBack }: PvPDuelProps) => {
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold glow-text flex items-center gap-2">
             <Swords className="w-6 h-6" />
-            PvP Duel
+            {t('pvp.title')}
           </h1>
           <Button variant="ghost" size="icon" onClick={onBack} disabled={phase === "resolving"}>
             <X className="w-5 h-5" />
@@ -136,8 +138,8 @@ const PvPDuel = ({ onComplete, onBack }: PvPDuelProps) => {
               <Swords className="w-12 h-12 text-white" />
             </motion.div>
             <div>
-              <h2 className="text-xl font-bold">Finding opponent...</h2>
-              <p className="text-muted-foreground mt-2">Searching for nearby players</p>
+              <h2 className="text-xl font-bold">{t('pvp.finding_opponent')}</h2>
+              <p className="text-muted-foreground mt-2">{t('pvp.searching_desc')}</p>
             </div>
           </motion.div>
         )}
@@ -157,13 +159,13 @@ const PvPDuel = ({ onComplete, onBack }: PvPDuelProps) => {
                   </div>
                   <div>
                     <div className="font-bold">@CryptoKing</div>
-                    <div className="text-xs text-muted-foreground">Level 42 • 89 Wins</div>
+                    <div className="text-xs text-muted-foreground">{t('pvp.level')} 42 • 89 {t('pvp.wins')}</div>
                   </div>
                 </div>
               </div>
               <div className="space-y-1">
                 <div className="flex justify-between text-sm">
-                  <span>Activity</span>
+                  <span>{t('pvp.activity')}</span>
                   <span className="font-bold">{Math.floor(opponentProgress)}%</span>
                 </div>
                 <div className="h-3 bg-muted rounded-full overflow-hidden">
@@ -183,7 +185,7 @@ const PvPDuel = ({ onComplete, onBack }: PvPDuelProps) => {
                   transition={{ repeat: Infinity, duration: 1 }}
                   className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center font-bold text-2xl shadow-[0_0_30px_hsl(var(--primary)/0.5)]"
                 >
-                  VS
+                  {t('pvp.vs')}
                 </motion.div>
               </div>
             </div>
@@ -193,17 +195,17 @@ const PvPDuel = ({ onComplete, onBack }: PvPDuelProps) => {
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center font-bold text-lg">
-                    YOU
+                    {t('pvp.you')}
                   </div>
                   <div>
                     <div className="font-bold">You</div>
-                    <div className="text-xs text-muted-foreground">Level 15 • 23 Wins</div>
+                    <div className="text-xs text-muted-foreground">{t('pvp.level')} 15 • 23 {t('pvp.wins')}</div>
                   </div>
                 </div>
               </div>
               <div className="space-y-1">
                 <div className="flex justify-between text-sm">
-                  <span>Activity</span>
+                  <span>{t('pvp.activity')}</span>
                   <span className="font-bold text-primary">{Math.floor(myProgress)}%</span>
                 </div>
                 <div className="h-3 bg-muted rounded-full overflow-hidden">
@@ -220,9 +222,9 @@ const PvPDuel = ({ onComplete, onBack }: PvPDuelProps) => {
               <div className="flex items-start gap-3">
                 <Zap className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
                 <div className="space-y-1">
-                  <div className="font-bold text-sm">Move faster to win!</div>
+                  <div className="font-bold text-sm">{t('pvp.move_faster')}</div>
                   <div className="text-xs text-muted-foreground">
-                    Walk, run, or scan quickly. First to 100% wins the NFT!
+                    {t('pvp.move_desc')}
                   </div>
                 </div>
               </div>
@@ -233,8 +235,8 @@ const PvPDuel = ({ onComplete, onBack }: PvPDuelProps) => {
         {phase === "resolving" && (
           <div className="flex flex-col items-center justify-center pt-20 space-y-4">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            <p className="text-lg font-bold">Verifying Duel Result...</p>
-            <p className="text-sm text-muted-foreground">Checking signatures and anti-cheat logs</p>
+            <p className="text-lg font-bold">{t('pvp.verifying')}</p>
+            <p className="text-sm text-muted-foreground">{t('pvp.verifying_desc')}</p>
           </div>
         )}
 
@@ -259,19 +261,19 @@ const PvPDuel = ({ onComplete, onBack }: PvPDuelProps) => {
 
             <div className="space-y-2">
               <h2 className={`text-3xl font-bold ${winner === "player" ? "glow-text-gold" : "text-muted-foreground"}`}>
-                {winner === "player" ? "Victory!" : "Defeat"}
+                {winner === "player" ? t('pvp.victory') : t('pvp.defeat')}
               </h2>
               <p className="text-muted-foreground">
                 {winner === "player"
-                  ? "You outpaced your opponent and claimed the NFT!"
-                  : "Your opponent was faster this time. Try again!"}
+                  ? t('pvp.win_msg')
+                  : t('pvp.lose_msg')}
               </p>
             </div>
 
             {winner === "player" && reward && (
               <Card className="p-4 bg-card/50 border-accent/30">
                 <div className="space-y-2">
-                  <div className="text-sm text-muted-foreground">Duel Reward</div>
+                  <div className="text-sm text-muted-foreground">{t('pvp.reward')}</div>
                   <div className="text-3xl font-bold text-accent">+{reward.value} XP</div>
                   <div className="text-sm capitalize">{reward.rarity} {reward.type}</div>
                 </div>
@@ -287,12 +289,12 @@ const PvPDuel = ({ onComplete, onBack }: PvPDuelProps) => {
                 {winner === "player" ? (
                   <>
                     <Trophy className="mr-2 w-5 h-5" />
-                    Claim & Continue
+                    {t('pvp.claim_continue')}
                   </>
                 ) : (
                   <>
                     <TrendingUp className="mr-2 w-5 h-5" />
-                    Find New Duel
+                    {t('pvp.find_new')}
                   </>
                 )}
               </Button>
@@ -302,7 +304,7 @@ const PvPDuel = ({ onComplete, onBack }: PvPDuelProps) => {
                 size="lg"
                 className="w-full"
               >
-                Back to Map
+                {t('pvp.back_map')}
               </Button>
             </div>
           </motion.div>

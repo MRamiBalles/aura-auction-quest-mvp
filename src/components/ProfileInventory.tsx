@@ -2,6 +2,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { User, X, Trophy, Zap, Sparkles, Award, TrendingUp } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { useInventory } from "@/contexts/InventoryContext";
 
 interface ProfileInventoryProps {
   onBack: () => void;
@@ -21,9 +23,8 @@ const achievements = [
   { id: 4, name: "Walking Legend", description: "Walk 100km total", icon: "👟", unlocked: false },
 ];
 
-import { useInventory } from "@/contexts/InventoryContext";
-
 const ProfileInventory = ({ onBack }: ProfileInventoryProps) => {
+  const { t } = useTranslation();
   const { items } = useInventory();
   const stats = {
     level: 15,
@@ -41,7 +42,7 @@ const ProfileInventory = ({ onBack }: ProfileInventoryProps) => {
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold glow-text flex items-center gap-2">
             <User className="w-6 h-6" />
-            Profile
+            {t('profile.title')}
           </h1>
           <Button variant="ghost" size="icon" onClick={onBack}>
             <X className="w-5 h-5" />
@@ -57,10 +58,10 @@ const ProfileInventory = ({ onBack }: ProfileInventoryProps) => {
             </div>
             <div className="flex-1">
               <h2 className="text-xl font-bold glow-text">@AuraHunter</h2>
-              <div className="text-sm text-muted-foreground">Level {stats.level} • {stats.rank}</div>
+              <div className="text-sm text-muted-foreground">{t('profile.level')} {stats.level} • {stats.rank}</div>
               <div className="flex items-center gap-2 mt-2">
                 <div className="px-2 py-1 bg-accent/20 rounded text-xs font-bold text-accent">
-                  Top 5% Earners
+                  {t('profile.earner_badge')}
                 </div>
               </div>
             </div>
@@ -72,28 +73,28 @@ const ProfileInventory = ({ onBack }: ProfileInventoryProps) => {
           <Card className="p-4 bg-card/50">
             <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
               <Zap className="w-4 h-4" />
-              Steps
+              {t('profile.steps')}
             </div>
             <div className="text-2xl font-bold text-primary">{stats.totalSteps.toLocaleString()}</div>
           </Card>
           <Card className="p-4 bg-card/50">
             <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
               <Trophy className="w-4 h-4" />
-              Earnings
+              {t('profile.earnings')}
             </div>
             <div className="text-2xl font-bold text-accent">${stats.totalEarnings}</div>
           </Card>
           <Card className="p-4 bg-card/50">
             <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
               <Sparkles className="w-4 h-4" />
-              NFTs
+              {t('profile.nfts')}
             </div>
             <div className="text-2xl font-bold text-secondary">{stats.nftsFound}</div>
           </Card>
           <Card className="p-4 bg-card/50">
             <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
               <Award className="w-4 h-4" />
-              PvP Wins
+              {t('profile.pvp_wins')}
             </div>
             <div className="text-2xl font-bold text-primary">{stats.pvpWins}</div>
           </Card>
@@ -102,7 +103,7 @@ const ProfileInventory = ({ onBack }: ProfileInventoryProps) => {
         {/* NFT Inventory */}
         <div className="space-y-3">
           <h3 className="text-sm font-bold text-muted-foreground flex items-center gap-2">
-            <Sparkles className="w-4 h-4" /> NFT Inventory ({items.length})
+            <Sparkles className="w-4 h-4" /> {t('profile.inventory')} ({items.length})
           </h3>
           <div className="grid grid-cols-2 gap-3">
             <AnimatePresence mode="popLayout">
@@ -151,7 +152,7 @@ const ProfileInventory = ({ onBack }: ProfileInventoryProps) => {
         {/* Achievements */}
         <div className="space-y-3">
           <h3 className="text-sm font-bold text-muted-foreground flex items-center gap-2">
-            <Award className="w-4 h-4" /> Achievements
+            <Award className="w-4 h-4" /> {t('profile.achievements')}
           </h3>
           <div className="space-y-2">
             {achievements.map((achievement, index) => (
@@ -182,10 +183,10 @@ const ProfileInventory = ({ onBack }: ProfileInventoryProps) => {
         <Card className="p-4 bg-gradient-to-br from-accent/20 to-primary/20 border-accent/30">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm text-muted-foreground">Daily Streak</div>
+              <div className="text-sm text-muted-foreground">{t('profile.daily_streak')}</div>
               <div className="text-3xl font-bold text-accent">7 Days 🔥</div>
               <div className="text-xs text-muted-foreground mt-1">
-                Keep going for bonus rewards!
+                {t('profile.streak_msg')}
               </div>
             </div>
             <TrendingUp className="w-12 h-12 text-accent/50" />
