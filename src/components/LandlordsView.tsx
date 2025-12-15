@@ -41,57 +41,104 @@ const LandlordsView: React.FC<LandlordsViewProps> = ({ onBack }) => {
         isLoading,
         claimParcel,
         buildImprovement,
-        withdrawTaxes
+        withdrawTaxes,
+        getBackendSignature
     } = useLandlords();
     const { account, connectWallet } = useWeb3();
 
     const [selectedParcel, setSelectedParcel] = useState<number | null>(null);
     const [showClaimModal, setShowClaimModal] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
 
     const handleWithdraw = async () => {
-        const success = await withdrawTaxes();
-        if (success) {
-            toast.success('¡Impuestos retirados!', {
-                description: `${pendingTaxes.toFixed(2)} AURA añadidos a tu wallet`,
-                icon: '💰',
-            });
-        } else {
-            toast.error('Error al retirar impuestos');
+        setIsProcessing(true);
+        try {
+            const success = await withdrawTaxes();
+            if (success) {
+                toast.success('¡Impuestos retirados!', {
+                    description: `AURA añadidos a tu wallet`,
+                    icon: '💰',
+                });
+            } else {
+                toast.error('Error al retirar impuestos');
+            }
+        } catch (error: any) {
+            toast.error('Error', { description: error.message });
+        } finally {
+            setIsProcessing(false);
         }
     };
 
+    /**
+     * SECURE FLOW:
+     * 1. Get GPS coordinates
+     * 2. Request signature from backend (proves physical presence)
+     * 3. Call contract with signature + MATIC payment
+     */
     const handleClaimHere = async () => {
-        // Get current location
         if ('geolocation' in navigator) {
+            setIsProcessing(true);
+
             navigator.geolocation.getCurrentPosition(
                 async (position) => {
-                    const success = await claimParcel(
-                        position.coords.latitude,
-                        position.coords.longitude
-                    );
-                    if (success) {
-                        toast.success('¡Parcela reclamada!', {
-                            description: 'Ahora ganas 5% de los cristales recolectados aquí',
-                            icon: '🏠',
-                        });
-                        setShowClaimModal(false);
+                    const { latitude, longitude } = position.coords;
+
+                    try {
+                        // Step 1: Get backend signature (proves GPS location)
+                        toast.loading('Verificando ubicación...', { id: 'claim' });
+                        const signature = await getBackendSignature(latitude, longitude);
+
+                        if (!signature) {
+                            toast.error('No se pudo verificar tu ubicación', { id: 'claim' });
+                            setIsProcessing(false);
+                            return;
+                        }
+
+                        // Step 2: Call contract with signature + payment
+                        toast.loading('Esperando confirmación de Metamask...', { id: 'claim' });
+                        const success = await claimParcel(latitude, longitude, signature);
+
+                        if (success) {
+                            toast.success('¡Parcela reclamada!', {
+                                id: 'claim',
+                                description: 'Ahora ganas 5% de los cristales recolectados aquí',
+                                icon: '🏠',
+                            });
+                            setShowClaimModal(false);
+                        } else {
+                            toast.error('Error al reclamar parcela', { id: 'claim' });
+                        }
+                    } catch (error: any) {
+                        toast.error('Error', { id: 'claim', description: error.message });
+                    } finally {
+                        setIsProcessing(false);
                     }
                 },
                 () => {
                     toast.error('No se pudo obtener tu ubicación');
+                    setIsProcessing(false);
                 }
             );
         }
     };
 
     const handleBuildImprovement = async (parcelId: number, improvement: ImprovementType) => {
-        const success = await buildImprovement(parcelId, improvement);
-        if (success) {
-            const info = IMPROVEMENT_INFO[improvement];
-            toast.success(`${info.emoji} ${info.name} construido`, {
-                description: info.description,
-            });
-            setSelectedParcel(null);
+        setIsProcessing(true);
+        try {
+            const success = await buildImprovement(parcelId, improvement);
+            if (success) {
+                const info = IMPROVEMENT_INFO[improvement];
+                toast.success(`${info.emoji} ${info.name} construido`, {
+                    description: info.description,
+                });
+                setSelectedParcel(null);
+            } else {
+                toast.error('Error al construir mejora');
+            }
+        } catch (error: any) {
+            toast.error('Error', { description: error.message });
+        } finally {
+            setIsProcessing(false);
         }
     };
 
