@@ -34,5 +34,31 @@
         "build_desc": "Colecciona Cristales y Artefactos. Intercámbialos en el mercado o úsalos para crear mejoras.",
         "next": "Siguiente",
         "start_hunting": "¡A Cazar!"
+    },
+    "marketplace": {
+        "title": "Subastas en Vivo",
+        "live_badge": "VIVO",
+        "bidders": "pujadores",
+        "current_bid": "Puja Actual",
+        "time_remaining": "Tiempo Restante",
+        "next_bid": "Siguiente Puja",
+        "place_bid": "Pujar",
+        "bid_placed": "¡Puja Realizada! 🎉",
+        "winning_title": "¡Vas ganando!",
+        "winning_desc": "Mantente firme para reclamar este NFT {{rarity}}. ¡Otros están pujando también! 🔥",
+        "more_auctions": "Más Subastas",
+        "todays_market": "Mercado de Hoy",
+        "total_volume": "Volumen Total",
+        "avg_price": "Precio Promedio",
+        "active_auctions": "Subastas Activas"
+    },
+    "hunt": {
+        "gps_waiting": "Esperando señal GPS...",
+        "no_wallet": "Billetera no encontrada",
+        "collected": "¡Cristal recolectado!",
+        "capture_failed": "Error al capturar cristal",
+        "camera_permission": "Permiso de cámara requerido para Caza AR",
+        "acquiring_gps": "Adquiriendo GPS...",
+        "scanning": "Escaneando área..."
     }
 }

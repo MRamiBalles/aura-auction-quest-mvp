@@ -34,5 +34,31 @@
         "build_desc": "Collect Crystals and Artifacts. Trade them on the marketplace or use them to craft upgrades.",
         "next": "Next",
         "start_hunting": "Start Hunting!"
+    },
+    "marketplace": {
+        "title": "Live Auctions",
+        "live_badge": "LIVE",
+        "bidders": "bidders",
+        "current_bid": "Current Bid",
+        "time_remaining": "Time Remaining",
+        "next_bid": "Next Bid",
+        "place_bid": "Place Bid",
+        "bid_placed": "Bid Placed! 🎉",
+        "winning_title": "You're winning!",
+        "winning_desc": "Hold on to claim this {{rarity}} NFT. Others are bidding too! 🔥",
+        "more_auctions": "More Auctions",
+        "todays_market": "Today's Market",
+        "total_volume": "Total Volume",
+        "avg_price": "Avg Sale Price",
+        "active_auctions": "Active Auctions"
+    },
+    "hunt": {
+        "gps_waiting": "Waiting for GPS signal...",
+        "no_wallet": "No wallet found",
+        "collected": "Crystal collected!",
+        "capture_failed": "Failed to capture crystal",
+        "camera_permission": "Camera permission required for AR Hunt",
+        "acquiring_gps": "Acquiring GPS...",
+        "scanning": "Scanning area..."
     }
 }
