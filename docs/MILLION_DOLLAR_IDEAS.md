@@ -30,13 +30,29 @@ Los usuarios crean y comparten retos de movimiento personalizados. Completarlos 
 
 ---
 
-## 2. 👻 Ghost Mode Premium - Suscripción Mensual
+## 2. 👻 Ghost Mode Premium - Suscripción Mensual (ACTUALIZADO)
 
-### Features
+### Features con Visibilidad Opcional
+Como sugeriste, la invisibilidad es OPCIONAL y toggleable:
+
+| Modo | Descripción | Icono |
+|------|-------------|-------|
+| **PÚBLICO** | Todos te ven en el mapa (default) | 🌍 |
+| **GHOST** | Invisible para todos | 👻 |
+| **AURA MODE** | Otros ven tu "aura glow" pero no posición exacta | ⚡ |
+| **DISFRAZ** | Te ves diferente (skin especial) | 🎭 |
+
+**Aura Mode** es especialmente interesante porque:
+- Fomenta encuentros casuales ("hay alguien cerca...")
+- Compatible con Aura Dating
+- Balancea privacidad con socialización
+
+### Tiers de Precio
+
 | Tier | Precio | Beneficios |
 |------|--------|------------|
 | **Free** | $0 | Visible en mapa, XP normal |
-| **Ghost** | $4.99/mes | Invisible, 2x XP fines de semana |
+| **Ghost** | $4.99/mes | Modos de visibilidad, 2x XP fines de semana |
 | **Phantom** | $9.99/mes | + Acceso anticipado Safari Zones, skin exclusivo |
 
 ### Revenue Model
