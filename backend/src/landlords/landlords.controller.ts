@@ -8,12 +8,20 @@
  * SECURITY: Uses ECDSA signatures to prove physical presence.
  * The signature is verified on-chain by LandRegistry.sol
  * 
+ * Security measures implemented:
+ * - JWT authentication required
+ * - Rate limiting (5 requests per minute)
+ * - Velocity checks (prevent teleportation)
+ * - Address verification (JWT user must match request)
+ * 
  * @author Manuel Ramírez Ballesteros
- * @version 1.0.0
+ * @version 2.0.0
  */
-import { Controller, Post, Body, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { Controller, Post, Body, BadRequestException, UnauthorizedException, UseGuards, Request } from '@nestjs/common';
 import { ethers } from 'ethers';
 import { ConfigService } from '@nestjs/config';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RedisService } from '../redis/redis.service';
 
 interface SignClaimRequest {
     userAddress: string;
@@ -27,13 +35,27 @@ interface SignClaimResponse {
     expiresAt: number;
 }
 
+// Rate limit: 5 requests per minute per user
+const RATE_LIMIT_WINDOW_SECONDS = 60;
+const RATE_LIMIT_MAX_REQUESTS = 5;
+
+// Velocity check: max 50km in 1 minute (roughly 3000 km/h - allows for GPS drift)
+const VELOCITY_CHECK_WINDOW_MS = 60000;
+const MAX_DISTANCE_METERS = 50000;
+
 @Controller('api/landlords')
+@UseGuards(JwtAuthGuard)
 export class LandlordsController {
     private readonly signerWallet: ethers.Wallet;
     private readonly signatureValidityMs: number = 5 * 60 * 1000; // 5 minutes
 
-    constructor(private readonly configService: ConfigService) {
+    constructor(
+        private readonly configService: ConfigService,
+        private readonly redisService: RedisService
+    ) {
         // Backend signer private key (MUST match backendValidator in LandRegistry.sol)
+        // SECURITY: This key should be stored in a secure secrets manager in production
+        // (AWS Secrets Manager, GCP Secret Manager, HashiCorp Vault, or HSM)
         const privateKey = this.configService.get<string>('BACKEND_SIGNER_PRIVATE_KEY');
         if (!privateKey) {
             throw new Error('BACKEND_SIGNER_PRIVATE_KEY not configured');
@@ -42,21 +64,93 @@ export class LandlordsController {
     }
 
     /**
+     * Calculate distance between two GPS coordinates using Haversine formula
+     */
+    private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+        const R = 6371000; // Earth's radius in meters
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    /**
+     * Check rate limit for user
+     */
+    private async checkRateLimit(userAddress: string): Promise<void> {
+        const key = `ratelimit:landlord:${userAddress.toLowerCase()}`;
+        const current = await this.redisService.get(key);
+        const count = current ? parseInt(current, 10) : 0;
+
+        if (count >= RATE_LIMIT_MAX_REQUESTS) {
+            throw new BadRequestException('Rate limit exceeded. Please wait before making another request.');
+        }
+
+        await this.redisService.set(key, (count + 1).toString(), RATE_LIMIT_WINDOW_SECONDS);
+    }
+
+    /**
+     * Check velocity - prevent teleportation exploits
+     */
+    private async checkVelocity(userAddress: string, latitude: number, longitude: number): Promise<void> {
+        const key = `velocity:landlord:${userAddress.toLowerCase()}`;
+        const lastClaimData = await this.redisService.get(key);
+
+        if (lastClaimData) {
+            const lastClaim = JSON.parse(lastClaimData);
+            const timeDiff = Date.now() - lastClaim.timestamp;
+
+            if (timeDiff < VELOCITY_CHECK_WINDOW_MS) {
+                // Convert from int64 format to degrees
+                const lastLat = lastClaim.latitude / 1e6;
+                const lastLon = lastClaim.longitude / 1e6;
+                const currentLat = latitude / 1e6;
+                const currentLon = longitude / 1e6;
+
+                const distance = this.calculateDistance(lastLat, lastLon, currentLat, currentLon);
+
+                if (distance > MAX_DISTANCE_METERS) {
+                    throw new BadRequestException(
+                        `Velocity check failed: Cannot travel ${Math.round(distance / 1000)}km in ${Math.round(timeDiff / 1000)}s`
+                    );
+                }
+            }
+        }
+
+        // Store current location for future velocity checks
+        await this.redisService.set(key, JSON.stringify({
+            latitude,
+            longitude,
+            timestamp: Date.now()
+        }), 300); // 5 minute TTL
+    }
+
+    /**
      * Generates a signed message proving the user was at the specified GPS location.
      * This signature is verified on-chain by LandRegistry.claimParcel()
      * 
-     * Anti-spoofing measures:
-     * 1. Signature expires after 5 minutes
-     * 2. User address is included in signature (prevents replay attacks)
-     * 3. Backend can add additional validation (IP geolocation, device fingerprinting)
+     * Security measures:
+     * 1. JWT authentication required
+     * 2. User address must match JWT token
+     * 3. Rate limiting (5 requests/minute)
+     * 4. Velocity checks (prevent teleportation)
+     * 5. Signature expires after 5 minutes
      */
     @Post('sign-claim')
-    async signClaim(@Body() body: SignClaimRequest): Promise<SignClaimResponse> {
+    async signClaim(@Body() body: SignClaimRequest, @Request() req: any): Promise<SignClaimResponse> {
         const { userAddress, latitude, longitude } = body;
 
         // Validate inputs
         if (!userAddress || !ethers.isAddress(userAddress)) {
             throw new BadRequestException('Invalid user address');
+        }
+
+        // SECURITY: Verify JWT user matches requested address
+        if (req.user?.address?.toLowerCase() !== userAddress.toLowerCase()) {
+            throw new UnauthorizedException('Address mismatch: JWT user does not match requested address');
         }
 
         if (latitude === undefined || longitude === undefined) {
@@ -71,11 +165,11 @@ export class LandlordsController {
             throw new BadRequestException('Invalid longitude');
         }
 
-        // TODO: Add additional anti-spoofing checks here:
-        // - IP geolocation validation
-        // - Device fingerprinting
-        // - Rate limiting per user
-        // - Velocity checks (can't claim parcels 100km apart in 1 minute)
+        // SECURITY: Rate limiting
+        await this.checkRateLimit(userAddress);
+
+        // SECURITY: Velocity check (anti-teleportation)
+        await this.checkVelocity(userAddress, latitude, longitude);
 
         // Create message hash (must match format in LandRegistry.sol)
         const timestamp = Math.floor(Date.now() / 1000);
