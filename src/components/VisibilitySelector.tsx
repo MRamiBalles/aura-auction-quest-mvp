@@ -60,16 +60,17 @@ const modes: ModeOption[] = [
 ];
 
 const VisibilitySelector: React.FC = () => {
-    const { currentMode, isPremium, setVisibility, upgradeToPremium } = useVisibility();
+    const { currentMode, isPremium, isLoading, remainingDays, setVisibility, upgradeToPremium } = useVisibility();
     const [isOpen, setIsOpen] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
 
     const handleModeSelect = (option: ModeOption) => {
         if (option.premium && !isPremium) {
             toast.error('Este modo requiere suscripción Premium', {
-                description: 'Actualiza a Ghost Premium para desbloquear',
+                description: 'Paga con MATIC para desbloquear',
                 action: {
                     label: 'Upgrade',
-                    onClick: () => handleUpgrade(),
+                    onClick: () => handleUpgrade(false),
                 },
             });
             return;
@@ -84,13 +85,26 @@ const VisibilitySelector: React.FC = () => {
         }
     };
 
-    const handleUpgrade = () => {
-        // Mock upgrade - in production would open payment modal
-        upgradeToPremium();
-        toast.success('¡Bienvenido a Ghost Premium!', {
-            description: 'Ahora puedes usar todos los modos de visibilidad',
-            icon: '👻',
-        });
+    /**
+     * SECURE: Now sends real blockchain transaction
+     */
+    const handleUpgrade = async (yearly: boolean) => {
+        setIsProcessing(true);
+        try {
+            const success = await upgradeToPremium(yearly);
+            if (success) {
+                toast.success('¡Bienvenido a Ghost Premium!', {
+                    description: `Suscripción ${yearly ? 'anual' : 'mensual'} activada`,
+                    icon: '👻',
+                });
+            }
+        } catch (error: any) {
+            toast.error('Error al procesar pago', {
+                description: error.message || 'Intenta de nuevo',
+            });
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     const currentOption = modes.find(m => m.mode === currentMode) || modes[0];
@@ -130,8 +144,8 @@ const VisibilitySelector: React.FC = () => {
                                             whileHover={{ x: 4 }}
                                             onClick={() => handleModeSelect(option)}
                                             className={`w-full p-3 rounded-lg flex items-center gap-3 transition-colors ${isSelected
-                                                    ? 'bg-aura-purple/30 border border-aura-purple/50'
-                                                    : 'hover:bg-white/5'
+                                                ? 'bg-aura-purple/30 border border-aura-purple/50'
+                                                : 'hover:bg-white/5'
                                                 } ${isLocked ? 'opacity-60' : ''}`}
                                         >
                                             {/* Icon */}
@@ -163,14 +177,29 @@ const VisibilitySelector: React.FC = () => {
 
                             {/* Premium CTA */}
                             {!isPremium && (
-                                <div className="mt-3 pt-3 border-t border-white/10">
+                                <div className="mt-3 pt-3 border-t border-white/10 space-y-2">
                                     <Button
-                                        onClick={handleUpgrade}
+                                        onClick={() => handleUpgrade(false)}
+                                        disabled={isProcessing || isLoading}
                                         className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90"
                                     >
                                         <Crown className="w-4 h-4 mr-2" />
-                                        Upgrade a Premium - €4.99/mes
+                                        {isProcessing ? 'Procesando...' : 'Mensual - 5 MATIC'}
                                     </Button>
+                                    <Button
+                                        onClick={() => handleUpgrade(true)}
+                                        disabled={isProcessing || isLoading}
+                                        variant="outline"
+                                        className="w-full border-yellow-500/50 text-yellow-400 hover:bg-yellow-500/10"
+                                    >
+                                        <Crown className="w-4 h-4 mr-2" />
+                                        {isProcessing ? 'Procesando...' : 'Anual - 50 MATIC (2 meses gratis)'}
+                                    </Button>
+                                </div>
+                            )}
+                            {isPremium && remainingDays > 0 && (
+                                <div className="mt-3 pt-3 border-t border-white/10 text-center text-xs text-green-400">
+                                    ✅ Premium activo - {remainingDays} días restantes
                                 </div>
                             )}
                         </Card>
