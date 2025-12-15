@@ -6,10 +6,12 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
- * @title AuctionHouse - SECURITY HARDENED
+ * @title AuctionHouse - SECURITY HARDENED V2
  * @notice Fixed critical vulnerabilities:
  * - P0-1: Added MAX_EXTENSIONS to prevent infinite extension loop
  * - P0-2: Implemented push-to-pull pattern for failed refunds
+ * - P1-3: Added grace period with late penalty for delayed finalization
+ * - P2-2: Added finalization reward to incentivize third-party finalization
  */
 contract AuctionHouse is ReentrancyGuard, Ownable {
     struct Auction {
@@ -43,12 +45,21 @@ contract AuctionHouse is ReentrancyGuard, Ownable {
     // 🔒 FIX P0-2: Push-to-pull pattern for failed refunds
     mapping(address => uint256) public failedRefunds;
 
+    // 🔒 FIX P1-3: Grace period for finalization
+    uint256 public constant GRACE_PERIOD = 1 hours;
+    uint256 public constant LATE_PENALTY_PER_HOUR = 1000; // 10% of platform fee per hour
+    
+    // 🔒 FIX P2-2: Finalization reward for third parties
+    uint256 public constant FINALIZATION_REWARD = 0.001 ether; // ~$2 incentive
+
     event AuctionCreated(uint256 indexed auctionId, address indexed nftContract, uint256 indexed tokenId, address seller, uint256 startPrice, uint256 endTime);
     event BidPlaced(uint256 indexed auctionId, address indexed bidder, uint256 amount);
     event AuctionFinalized(uint256 indexed auctionId, address indexed winner, uint256 amount);
     event AuctionCancelled(uint256 indexed auctionId);
     event ExtensionLimitReached(uint256 indexed auctionId);
     event RefundFailed(uint256 indexed auctionId, address indexed bidder, uint256 amount);
+    event LatePenaltyApplied(uint256 indexed auctionId, uint256 penalty, address indexed recipient);
+    event FinalizationRewardPaid(uint256 indexed auctionId, address indexed finalizer, uint256 reward);
 
     function createAuction(
         address nftContract,
@@ -143,6 +154,16 @@ contract AuctionHouse is ReentrancyGuard, Ownable {
         require(auction.active, "Auction not active");
         require(block.timestamp >= auction.endTime, "Auction not ended");
 
+        // 🔒 FIX P1-3: Access control during grace period
+        // Only seller or winner can finalize during first hour
+        // After grace period, anyone can finalize
+        if (block.timestamp < auction.endTime + GRACE_PERIOD) {
+            require(
+                msg.sender == auction.seller || msg.sender == auction.currentBidder,
+                "Only seller or winner during grace period"
+            );
+        }
+
         auction.active = false;
 
         // If no bids, return NFT to seller
@@ -154,6 +175,32 @@ contract AuctionHouse is ReentrancyGuard, Ownable {
         // Calculate fees
         uint256 fee = (auction.currentBid * platformFee) / FEE_DENOMINATOR;
         uint256 sellerProceeds = auction.currentBid - fee;
+        
+        // 🔒 FIX P1-3: Apply late penalty if finalized after grace period
+        uint256 penalty = 0;
+        if (block.timestamp > auction.endTime + GRACE_PERIOD) {
+            uint256 lateTime = block.timestamp - (auction.endTime + GRACE_PERIOD);
+            uint256 latePeriods = (lateTime / 1 hours) + 1; // At least 1 period
+            
+            // Penalty: 10% of fee per hour late, capped at 100% of fee
+            penalty = (fee * LATE_PENALTY_PER_HOUR * latePeriods) / FEE_DENOMINATOR;
+            if (penalty > fee) penalty = fee;
+            
+            // Deduct penalty from seller proceeds (goes to winner)
+            sellerProceeds -= penalty;
+            
+            emit LatePenaltyApplied(auctionId, penalty, auction.currentBidder);
+        }
+        
+        // 🔒 FIX P2-2: Calculate finalization reward for third parties
+        uint256 finalizerReward = 0;
+        if (msg.sender != auction.seller && msg.sender != auction.currentBidder) {
+            // Only pay reward if seller has enough proceeds
+            if (sellerProceeds > FINALIZATION_REWARD) {
+                finalizerReward = FINALIZATION_REWARD;
+                sellerProceeds -= finalizerReward;
+            }
+        }
 
         // 🔒 IMPROVEMENT: Try-catch for NFT transfer
         try IERC721(auction.nftContract).safeTransferFrom(
@@ -167,10 +214,31 @@ contract AuctionHouse is ReentrancyGuard, Ownable {
             (bool successSeller, ) = payable(auction.seller).call{value: sellerProceeds}("");
             require(successSeller, "Seller payment failed");
 
-            // Transfer fee to owner
-            if (fee > 0) {
-                (bool successFee, ) = payable(owner()).call{value: fee}("");
+            // Transfer fee (minus penalty) to owner
+            uint256 ownerFee = fee - penalty;
+            if (ownerFee > 0) {
+                (bool successFee, ) = payable(owner()).call{value: ownerFee}("");
                 require(successFee, "Fee payment failed");
+            }
+            
+            // Transfer penalty to winner as compensation
+            if (penalty > 0) {
+                (bool successPenalty, ) = payable(auction.currentBidder).call{value: penalty}("");
+                // If penalty transfer fails, add to failed refunds
+                if (!successPenalty) {
+                    failedRefunds[auction.currentBidder] += penalty;
+                }
+            }
+            
+            // 🔒 FIX P2-2: Pay finalization reward to third party
+            if (finalizerReward > 0) {
+                (bool successReward, ) = payable(msg.sender).call{value: finalizerReward}("");
+                if (successReward) {
+                    emit FinalizationRewardPaid(auctionId, msg.sender, finalizerReward);
+                } else {
+                    // If reward fails, add to failed refunds
+                    failedRefunds[msg.sender] += finalizerReward;
+                }
             }
 
             emit AuctionFinalized(auctionId, auction.currentBidder, auction.currentBid);

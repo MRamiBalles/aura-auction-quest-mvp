@@ -6,9 +6,10 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
- * @title Marketplace - SECURITY HARDENED
+ * @title Marketplace - SECURITY HARDENED V2
  * @notice Fixed high-priority vulnerabilities:
  * - P1-1: Implemented push-to-pull pattern for payment failures
+ * - P1-2: Added reservation system for front-running protection
  * - Additional: NFT ownership validation before purchase
  * - Additional: Lock fee per listing to prevent fee manipulation
  */
@@ -39,14 +40,54 @@ contract Marketplace is ReentrancyGuard, Ownable {
     event PlatformFeeUpdated(uint256 newFee);
     event PaymentFailed(address indexed recipient, uint256 amount);
     event WithdrawalSuccessful(address indexed recipient, uint256 amount);
+    event ListingReserved(uint256 indexed listingId, address indexed reservedFor, uint256 expiresAt);
+
+    // 🔒 FIX P1-2: Front-running protection via reservation
+    mapping(uint256 => address) public reservedFor;
+    mapping(uint256 => uint256) public reservationExpiry;
+    uint256 public constant RESERVATION_PERIOD = 1 hours;
 
     constructor() {}
 
+    /**
+     * @notice List an NFT for sale
+     * @param nftContract Address of the NFT contract
+     * @param tokenId Token ID to list
+     * @param price Sale price in wei
+     * @return listingId The ID of the new listing
+     */
     function listItem(
         address nftContract,
         uint256 tokenId,
         uint256 price
     ) external nonReentrant returns (uint256) {
+        return _listItem(nftContract, tokenId, price, address(0));
+    }
+
+    /**
+     * 🔒 FIX P1-2: List with optional reservation for front-running protection
+     * @notice List an NFT with optional buyer reservation (prevents front-running)
+     * @param nftContract Address of the NFT contract
+     * @param tokenId Token ID to list
+     * @param price Sale price in wei
+     * @param reservedBuyer Address that can exclusively buy (address(0) for public)
+     * @return listingId The ID of the new listing
+     */
+    function listItemWithReservation(
+        address nftContract,
+        uint256 tokenId,
+        uint256 price,
+        address reservedBuyer
+    ) external nonReentrant returns (uint256) {
+        return _listItem(nftContract, tokenId, price, reservedBuyer);
+    }
+
+    function _listItem(
+        address nftContract,
+        uint256 tokenId,
+        uint256 price,
+        address reservedBuyer
+    ) internal returns (uint256) {
         require(price > 0, "Price must be > 0");
         require(IERC721(nftContract).ownerOf(tokenId) == msg.sender, "Not the owner");
         require(
@@ -64,9 +105,16 @@ contract Marketplace is ReentrancyGuard, Ownable {
             tokenId: tokenId,
             seller: msg.sender,
             price: price,
-            platformFeeAtListing: platformFee, // Lock fee at listing time
+            platformFeeAtListing: platformFee,
             active: true
         });
+
+        // 🔒 FIX P1-2: Set reservation if specified
+        if (reservedBuyer != address(0)) {
+            reservedFor[listingCounter] = reservedBuyer;
+            reservationExpiry[listingCounter] = block.timestamp + RESERVATION_PERIOD;
+            emit ListingReserved(listingCounter, reservedBuyer, reservationExpiry[listingCounter]);
+        }
 
         emit ItemListed(listingCounter, nftContract, tokenId, msg.sender, price, platformFee);
         return listingCounter;
@@ -77,6 +125,18 @@ contract Marketplace is ReentrancyGuard, Ownable {
         require(listing.active, "Listing not active");
         require(msg.value >= listing.price, "Insufficient payment");
         require(msg.sender != listing.seller, "Cannot buy own listing");
+        
+        // 🔒 FIX P1-2: Check reservation status
+        if (reservedFor[listingId] != address(0)) {
+            if (block.timestamp < reservationExpiry[listingId]) {
+                // Reservation still active - only reserved buyer can purchase
+                require(
+                    msg.sender == reservedFor[listingId],
+                    "Item reserved for another buyer"
+                );
+            }
+            // Reservation expired - anyone can buy now
+        }
         
         // 🔒 IMPROVEMENT: Verify seller still owns NFT
         require(
