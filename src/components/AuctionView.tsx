@@ -1,3 +1,22 @@
+/**
+ * AuctionView - Live NFT auction interface with real-time bidding.
+ * 
+ * Features:
+ * - Live countdown timers for active auctions
+ * - Real-time bid updates via WebSocket (planned)
+ * - Anti-sniping: 2-minute extension on last-second bids
+ * - Rarity-based visual indicators
+ * - Sound effects for bid events
+ * 
+ * Integrates with:
+ * - AuctionHouse.sol smart contract
+ * - Web3Context for wallet connection
+ * - SoundContext for audio feedback
+ * 
+ * @author Manuel Ramírez Ballesteros
+ * @version 1.0.0
+ * @see {@link contracts/AuctionHouse.sol}
+ */
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -8,6 +27,10 @@ import { useWeb3 } from '@/contexts/Web3Context';
 import { toast } from 'sonner';
 import { useSound } from '@/contexts/SoundContext';
 
+/**
+ * Auction item data structure.
+ * Matches the data returned from AuctionHouse.sol getAuction().
+ */
 interface Auction {
     auctionId: number;
     tokenId: number;

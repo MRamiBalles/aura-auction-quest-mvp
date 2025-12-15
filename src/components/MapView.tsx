@@ -1,13 +1,41 @@
+/**
+ * MapView - Main game map showing AR hotspots and player statistics.
+ * 
+ * Features:
+ * - Interactive map with nearby crystal hotspots
+ * - Real-time player count at each location
+ * - Daily stats (steps, earnings, NFTs found)
+ * - Live activity feed showing recent finds
+ * - Quick access to AR Hunt and PvP modes
+ * 
+ * UI Elements:
+ * - Pulsing user location indicator
+ * - Rarity-colored hotspot markers
+ * - Hover tooltips with location details
+ * - Animated scan line effect
+ * 
+ * @author Manuel Ramírez Ballesteros
+ * @version 1.0.0
+ */
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { MapPin, Users, Sparkles, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
+/**
+ * Props for MapView component.
+ */
 interface MapViewProps {
+  /** Callback when user wants to start AR crystal hunting */
   onStartHunt: () => void;
+  /** Callback when user wants to find a PvP opponent */
   onStartPvP: () => void;
 }
 
+/**
+ * Mock hotspot data - in production would come from backend.
+ * Represents nearby locations with crystal spawn activity.
+ */
 const hotspots = [
   { id: 1, name: "Central Park", distance: "0.3 km", rarity: "Legendary", players: 12, x: "30%", y: "40%" },
   { id: 2, name: "Tech Plaza", distance: "0.8 km", rarity: "Epic", players: 8, x: "60%", y: "25%" },
@@ -15,12 +43,18 @@ const hotspots = [
   { id: 4, name: "Mall District", distance: "0.5 km", rarity: "Epic", players: 15, x: "75%", y: "50%" },
 ];
 
+/**
+ * Rarity-based styling for hotspot markers.
+ */
 const rarityColors = {
   Legendary: "border-accent shadow-[0_0_20px_hsl(var(--accent)/0.5)]",
   Epic: "border-secondary shadow-[0_0_15px_hsl(var(--secondary)/0.4)]",
   Rare: "border-primary shadow-[0_0_10px_hsl(var(--primary)/0.3)]",
 };
 
+/**
+ * MapView component - The main hub for game navigation.
+ */
 const MapView = ({ onStartHunt, onStartPvP }: MapViewProps) => {
   return (
     <div className="min-h-screen pb-24 relative">
@@ -81,7 +115,7 @@ const MapView = ({ onStartHunt, onStartPvP }: MapViewProps) => {
               <div className={`w-12 h-12 rounded-full border-2 ${rarityColors[spot.rarity as keyof typeof rarityColors]} bg-card/90 backdrop-blur flex items-center justify-center animate-pulse-glow`}>
                 <Sparkles className="w-6 h-6 text-accent" />
               </div>
-              
+
               {/* Tooltip */}
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                 <div className="bg-card border border-primary/30 rounded-lg p-2 whitespace-nowrap text-xs shadow-lg">
