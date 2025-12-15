@@ -1,4 +1,4 @@
-# AuraAuction Quest: Secure Backend Architecture (Phase 4 Design)
+# Aura World: Secure Backend Architecture (Phase 4 Design)
 
 **Status:** Planning / Design
 **Target:** Production-Ready Secure Environment

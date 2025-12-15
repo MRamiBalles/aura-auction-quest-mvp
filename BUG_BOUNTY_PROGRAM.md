@@ -1,4 +1,4 @@
-# 🐛 AuraAuction Quest - Bug Bounty Program
+# 🐛 Aura World - Bug Bounty Program
 
 **Program Status**: 🟢 ACTIVE  
 **Platform**: Immunefi / Self-Hosted  

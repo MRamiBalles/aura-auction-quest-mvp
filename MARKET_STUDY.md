@@ -1,4 +1,4 @@
-# AuraAuction Quest: Estudio de Mercado Estratégico y Análisis de Oportunidad "Millonaria"
+# Aura World: Estudio de Mercado Estratégico y Análisis de Oportunidad "Millonaria"
 
 **Fecha:** 23 de Noviembre de 2025
 **Versión:** 1.0

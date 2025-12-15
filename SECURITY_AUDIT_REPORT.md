@@ -1,4 +1,4 @@
-# 🔐 Security Audit Report - AuraAuction Quest
+# 🔐 Security Audit Report - Aura World
 
 **Date**: November 23, 2025  
 **Auditor**: Internal Security Review  

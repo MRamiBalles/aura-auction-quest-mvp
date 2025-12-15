@@ -1,7 +1,7 @@
 import { ethers } from "hardhat";
 
 async function main() {
-    console.log("🚀 Starting AuraAuction Quest Deployment...");
+    console.log("🚀 Starting Aura World Deployment...");
 
     // 1. Deploy AuraToken
     const AuraToken = await ethers.getContractFactory("AuraToken");

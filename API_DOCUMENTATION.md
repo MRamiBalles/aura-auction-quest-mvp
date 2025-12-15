@@ -1,4 +1,4 @@
-# AuraAuction Quest API Documentation
+# Aura World API Documentation
 
 Base URL: `/api` (Production) | `http://localhost:3000` (Development)
 

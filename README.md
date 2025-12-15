@@ -1,89 +1,123 @@
-# AuraAuction Quest (MVP)
+# Aura World (MVP)
 
-A location-based AR treasure hunt game with a secure blockchain economy and anti-cheat protection.
+> **Move-to-Earn AR Game** - Walk, hunt NFTs, battle players, and earn crypto.
 
-## 🌟 Features
+[![License](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
+[![Blockchain](https://img.shields.io/badge/Blockchain-Polygon-purple.svg)](https://polygon.technology/)
+[![Status](https://img.shields.io/badge/Status-MVP-blue.svg)]()
 
-*   **AR Crystal Hunting**: Find and collect crystals in the real world using your camera.
-*   **Blockchain Economy**: Mint captured crystals as NFTs on the Polygon Amoy Testnet.
-*   **Anti-Cheat System**: Server-side GPS verification to prevent spoofing and teleportation.
-*   **Wallet Integration**: Connect with MetaMask to manage your inventory and tokens.
+---
+
+## 👨‍💻 Creador
+
+**Manuel Ramírez Ballesteros**  
+📧 Email: ramiballes96@gmail.com  
+💰 PayPal/Donaciones: [ramiballes96@gmail.com](https://paypal.me/ramiballes96)
+
+> ¿Te gusta el proyecto? ¡Considera hacer una donación para apoyar el desarrollo del MVP! Cada contribución ayuda a acelerar el lanzamiento. 🚀
+
+---
+
+## 🌟 Características
+
+- **AR Crystal Hunting**: Encuentra y colecciona cristales en el mundo real usando tu cámara.
+- **Economía Blockchain**: Mintea los cristales capturados como NFTs en Polygon Amoy Testnet.
+- **Sistema Anti-Cheat**: Verificación GPS en servidor para prevenir spoofing y teletransporte.
+- **Integración Wallet**: Conecta con MetaMask para gestionar tu inventario y tokens.
+- **PvP Duels**: Batalla contra otros jugadores en tiempo real.
+- **Live Auctions**: Sistema de subastas con protección anti-sniping.
+- **Multi-idioma**: Soporte para Inglés, Español y Japonés.
 
 ---
 
 ## 🛠️ Tech Stack
 
-*   **Frontend**: React, Vite, Tailwind CSS, Framer Motion
-*   **Backend**: NestJS, MongoDB (Mongoose)
-*   **Blockchain**: Hardhat, Solidity, Ethers.js
-*   **AR**: Native HTML5 Camera & Geolocation APIs
+| Capa | Tecnologías |
+|------|-------------|
+| **Frontend** | React, Vite, Tailwind CSS, Framer Motion, i18next |
+| **Backend** | NestJS, MongoDB (Mongoose), JWT Auth |
+| **Blockchain** | Hardhat, Solidity 0.8.20, Ethers.js v6 |
+| **AR** | Native HTML5 Camera & Geolocation APIs |
+| **Monitoring** | Sentry SDK v8 |
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Quick Start
 
-### 1. Prerequisites
+### Prerequisites
+- Node.js v18+
+- npm or yarn
+- MongoDB (local o Atlas URI)
+- MetaMask Browser Extension
 
-*   Node.js (v18+)
-*   npm or yarn
-*   MongoDB (running locally or Atlas URI)
-*   MetaMask Browser Extension
+### 1. Frontend
+```bash
+npm install
+npm run dev
+```
+*Disponible en `http://localhost:8080`*
 
-### 2. Backend Setup (Secure API)
-
-The backend handles authentication and anti-cheat validation.
-
+### 2. Backend
 ```bash
 cd backend
 npm install
 npm run start:dev
 ```
+*API en `http://localhost:3000`*
 
-*The server will start on `http://localhost:3000`.*
-
-### 3. Smart Contracts (Blockchain)
-
-Deploy the contracts to the Polygon Amoy Testnet.
-
-1.  Create a `.env` file in the root directory:
-    ```env
-    PRIVATE_KEY=your_wallet_private_key
-    ```
-2.  Deploy contracts:
-    ```bash
-    npx hardhat run scripts/deploy.ts --network amoy
-    ```
-3.  Copy the deployed addresses into your frontend config (if applicable).
-
-### 4. Frontend Setup (Game Client)
-
-Run the React application.
-
+### 3. Smart Contracts
 ```bash
-# Install dependencies
-npm install
-
-# Start the development server
-npm run dev
+# Crear .env con PRIVATE_KEY
+npx hardhat run scripts/deploy.ts --network amoy
 ```
 
-*The game will be available at `http://localhost:8080`.*
+---
+
+## 🛡️ Sistema Anti-Cheat
+
+Arquitectura "Trust Sandwich":
+1. **Cliente** → Reporta posición GPS
+2. **Backend** → Valida velocidad/distancia, firma el movimiento
+3. **Blockchain** → Solo acepta movimientos firmados
+
+| Regla | Límite |
+|-------|--------|
+| Max Speed | 30 km/h |
+| Max Teleport | 500m |
 
 ---
 
-## 🛡️ Anti-Cheat System
+## 📊 Roadmap 2026
 
-The game implements a "Trust Sandwich" architecture:
-1.  **Client**: Reports GPS position to Backend.
-2.  **Backend**: Calculates speed and distance. If valid, it signs the move.
-3.  **Blockchain**: (Future) Only accepts signed moves for minting.
-
-**Current Rules:**
-*   Max Speed: **30 km/h**
-*   Max Teleport Distance: **500m**
+- **Q1**: Beta cerrada, Safari Zone Events
+- **Q2**: Lanzamiento público, Battle Pass
+- **Q3**: B2B SaaS SDK, Corporate Wellness
+- **Q4**: Aura Dating, Landlords System
 
 ---
 
-## 📜 License
+## 🤝 Contribuir
 
-This project is an MVP prototype. All rights reserved.
+¿Quieres contribuir al proyecto?
+
+1. Fork el repositorio
+2. Crea una branch (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add AmazingFeature'`)
+4. Push a la branch (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+O simplemente contacta a **ramiballes96@gmail.com** para discutir ideas.
+
+---
+
+## 📜 Licencia
+
+Este proyecto es un prototipo MVP. Todos los derechos reservados.  
+© 2024-2025 Manuel Ramírez Ballesteros
+
+---
+
+<p align="center">
+  <strong>Hecho con ❤️ por Manuel Ramírez Ballesteros</strong><br>
+  <a href="mailto:ramiballes96@gmail.com">ramiballes96@gmail.com</a>
+</p>

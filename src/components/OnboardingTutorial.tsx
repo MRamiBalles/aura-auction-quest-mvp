@@ -5,7 +5,7 @@ import { Sparkles, Map, Zap, Trophy, ArrowRight } from "lucide-react";
 
 const steps = [
   {
-    title: "Welcome to AuraAuction Quest",
+    title: "Welcome to Aura World",
     description: "The first AR Move-to-Earn game where your steps unlock rare NFT crystals worth real money.",
     icon: Sparkles,
     gradient: "from-primary to-secondary",
@@ -89,11 +89,10 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
             {steps.map((_, index) => (
               <div
                 key={index}
-                className={`h-2 rounded-full transition-all ${
-                  index === currentStep
+                className={`h-2 rounded-full transition-all ${index === currentStep
                     ? "w-8 bg-primary shadow-[0_0_10px_hsl(var(--primary))]"
                     : "w-2 bg-muted"
-                }`}
+                  }`}
               />
             ))}
           </div>

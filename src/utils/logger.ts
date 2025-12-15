@@ -1,6 +1,9 @@
 /**
- * Centralized logger utility for AuraAuction Quest.
+ * Centralized logger utility for Aura World.
  * Prevents sensitive error details from being exposed in production console.
+ * 
+ * @author Manuel Ramírez Ballesteros
+ * @version 1.0.0
  */
 
 export const logError = (context: string, error: any) => {
