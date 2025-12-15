@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -10,9 +11,12 @@ import { GameModule } from './game/game.module';
 import { RedisModule } from './redis/redis.module';
 import { MarketplaceModule } from './marketplace/marketplace.module';
 import { SocialModule } from './social/social.module';
+import { LandlordsModule } from './landlords/landlords.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
     imports: [
+        ConfigModule.forRoot({ isGlobal: true }),
         DatabaseModule,
         AuthModule,
         UsersModule,
@@ -21,8 +25,11 @@ import { SocialModule } from './social/social.module';
         RedisModule,
         MarketplaceModule,
         SocialModule,
+        LandlordsModule,
+        AnalyticsModule,
     ],
     controllers: [AppController],
     providers: [AppService],
 })
 export class AppModule { }
+
