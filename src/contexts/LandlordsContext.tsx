@@ -127,16 +127,32 @@ export const LandlordsProvider: React.FC<LandlordsProviderProps> = ({ children }
     }, []);
 
     /**
+     * Get auth token from localStorage (set during wallet login)
+     */
+    const getAuthToken = (): string | null => {
+        return localStorage.getItem('aura_auth_token');
+    };
+
+    /**
      * Get backend signature proving GPS location.
      * This prevents GPS spoofing attacks.
+     * SECURITY: Requires JWT authentication to prevent unauthorized signature requests.
      */
     const getBackendSignature = async (latitude: number, longitude: number): Promise<string | null> => {
+        const token = getAuthToken();
+        
+        if (!token) {
+            console.error('No auth token found. User must authenticate first.');
+            setState(prev => ({ ...prev, error: 'Authentication required. Please connect your wallet.' }));
+            return null;
+        }
+
         try {
             const response = await fetch(`${BACKEND_API_URL}/api/landlords/sign-claim`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    // Add auth token here in production
+                    'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify({
                     userAddress: account,
@@ -145,8 +161,16 @@ export const LandlordsProvider: React.FC<LandlordsProviderProps> = ({ children }
                 }),
             });
 
+            if (response.status === 401) {
+                // Token expired or invalid - clear and prompt re-auth
+                localStorage.removeItem('aura_auth_token');
+                setState(prev => ({ ...prev, error: 'Session expired. Please reconnect your wallet.' }));
+                return null;
+            }
+
             if (!response.ok) {
-                throw new Error('Failed to get signature from backend');
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to get signature from backend');
             }
 
             const data = await response.json();
