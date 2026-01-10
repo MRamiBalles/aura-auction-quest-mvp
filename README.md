@@ -73,17 +73,31 @@ npx hardhat run scripts/deploy.ts --network amoy
 
 ---
 
-## 🛡️ Sistema Anti-Cheat
+## 🛡️ Sistema Anti-Cheat (Sensor Fusion Architecture)
+Arquitectura "Trust Sandwich" robusta contra ataques de inyección de señal (GPS Spoofing).
 
-Arquitectura "Trust Sandwich":
-1. **Cliente** → Reporta posición GPS
-2. **Backend** → Valida velocidad/distancia, firma el movimiento
-3. **Blockchain** → Solo acepta movimientos firmados
+```mermaid
+graph TD;
+    A[GPS Signal] --> B{Sensor Fusion Engine};
+    C[IMU / Accelerometer] --> B;
+    B -- "Correlation Check > 0.9" --> D[Valid Move];
+    B -- "Mismatch (Teleport)" --> E[Flag Anomaly];
+    D --> F[Sign Transaction (Play Integrity API)];
+    E --> G[Shadowban / Revert];
+```
 
-| Regla | Límite |
-|-------|--------|
-| Max Speed | 30 km/h |
-| Max Teleport | 500m |
+### 🧬 Detección de Anomalías (Human vs. Bot Behavior)
+| Signal Metric | Human Player (Organic) | GPS Spoofer / Bot (Synthetic) | Detection Action |
+| :--- | :--- | :--- | :--- |
+| **Accelerometer Variance** | High Noise (>0.5g) | Zero / Perfectly Smooth | **Flag Account** |
+| **Speed Consistency** | Variable (Stop-Start) | Constant (30.0 km/h) | **Soft Ban** |
+| **Altitude Delta** | Natural Fluctuation | Flat (0m change) | **Reject Transaction** |
+
+| Regla | Límite | Detection Method |
+|-------|--------| :--- |
+| **Max Speed** | 30 km/h | Time-Distance Delta |
+| **Jump Detection** | 500m | Kalman Filter Smoothing |
+| **Device Integrity** | Hardware | Google Play Attestation |
 
 ---
 
