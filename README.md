@@ -1,137 +1,63 @@
-# Aura World (MVP)
-
-> **Move-to-Earn AR Game** - Walk, hunt NFTs, battle players, and earn crypto.
-
-[![License](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
-[![Blockchain](https://img.shields.io/badge/Blockchain-Polygon-purple.svg)](https://polygon.technology/)
-[![Status](https://img.shields.io/badge/Status-MVP-blue.svg)]()
-
 ---
 
-## 👨‍💻 Creador
+# 🏆 Aura Auction Quest (MVP)
 
-**Manuel Ramírez Ballesteros**  
-📧 Email: ramiballes96@gmail.com  
-💰 PayPal/Donaciones: [ramiballes96@gmail.com](https://paypal.me/ramiballes96)
+> **Plataforma de Subastas Gamificada con Sistema de Quests y Recompensas**
 
-> ¿Te gusta el proyecto? ¡Considera hacer una donación para apoyar el desarrollo del MVP! Cada contribución ayuda a acelerar el lanzamiento. 🚀
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E)](https://vitejs.dev/)
 
----
+Aura Auction Quest es una plataforma interactiva que fusiona las dinámicas de **subastas en tiempo real** con elementos de **juegos de rol (RPG)**. Los usuarios pueden participar en pujas por items exclusivos, completar misiones (quests) diarias y ganar experiencia para desbloquear recompensas y mejorar su estatus en la plataforma.
 
-## 🌟 Características
+## ✨ Características Principales
 
-- **AR Crystal Hunting**: Encuentra y colecciona cristales en el mundo real usando tu cámara.
-- **Economía Blockchain**: Mintea los cristales capturados como NFTs en Polygon Amoy Testnet.
-- **Sistema Anti-Cheat**: Verificación GPS en servidor para prevenir spoofing y teletransporte.
-- **Integración Wallet**: Conecta con MetaMask para gestionar tu inventario y tokens.
-- **PvP Duels**: Batalla contra otros jugadores en tiempo real.
-- **Live Auctions**: Sistema de subastas con protección anti-sniping.
-- **Multi-idioma**: Soporte para Inglés, Español y Japonés.
+*   **Subastas Dinámicas**: Sistema de pujas en tiempo real con cuentas atrás precisas.
+*   **Motor de Quests**: Misiones diarias y semanales que incentivan la interacción y recompensan la lealtad de los usuarios.
+*   **Economía Virtual**: Moneda interna e inventario donde los usuarios gestionan los items ganados.
+*   **Diseño Reactivo**: UI/UX premium desarrollada con React y Vite, enfocada en la velocidad y la gamificación visual.
+*   **Arquitectura Escalable**: Código TypeScript altamente tipado para asegurar la estabilidad del MVP en entornos de alta concurrencia.
 
----
+## 🚀 Inicio Rápido
 
-## 🛠️ Tech Stack
+### Requisitos Previos
+*   **Node.js**: Versión 18 o superior.
+*   **Gestor de paquetes**: npm o pnpm.
 
-| Capa | Tecnologías |
-|------|-------------|
-| **Frontend** | React, Vite, Tailwind CSS, Framer Motion, i18next |
-| **Backend** | NestJS, MongoDB (Mongoose), JWT Auth |
-| **Blockchain** | Hardhat, Solidity 0.8.20, Ethers.js v6 |
-| **AR** | Native HTML5 Camera & Geolocation APIs |
-| **Monitoring** | Sentry SDK v8 |
-
----
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js v18+
-- npm or yarn
-- MongoDB (local o Atlas URI)
-- MetaMask Browser Extension
-
-### 1. Frontend
+### Instalación
 ```bash
+# 1. Clona el repositorio
+git clone https://github.com/MRamiBalles/aura-auction-quest-mvp.git
+cd aura-auction-quest-mvp
+
+# 2. Instala las dependencias
 npm install
+
+# 3. Inicia el servidor de desarrollo
 npm run dev
 ```
-*Disponible en `http://localhost:8080`*
-
-### 2. Backend
-```bash
-cd backend
-npm install
-npm run start:dev
-```
-*API en `http://localhost:3000`*
-
-### 3. Smart Contracts
-```bash
-# Crear .env con PRIVATE_KEY
-npx hardhat run scripts/deploy.ts --network amoy
-```
+La aplicación estará disponible en `http://localhost:5173`.
 
 ---
 
-## 🛡️ Sistema Anti-Cheat (Sensor Fusion Architecture)
-Arquitectura "Trust Sandwich" robusta contra ataques de inyección de señal (GPS Spoofing).
+## 🛠️ Stack Tecnológico
 
-```mermaid
-graph TD;
-    A[GPS Signal] --> B{Sensor Fusion Engine};
-    C[IMU / Accelerometer] --> B;
-    B -- "Correlation Check > 0.9" --> D[Valid Move];
-    B -- "Mismatch (Teleport)" --> E[Flag Anomaly];
-    D --> F[Sign Transaction (Play Integrity API)];
-    E --> G[Shadowban / Revert];
-```
-
-### 🧬 Detección de Anomalías (Human vs. Bot Behavior)
-| Signal Metric | Human Player (Organic) | GPS Spoofer / Bot (Synthetic) | Detection Action |
-| :--- | :--- | :--- | :--- |
-| **Accelerometer Variance** | High Noise (>0.5g) | Zero / Perfectly Smooth | **Flag Account** |
-| **Speed Consistency** | Variable (Stop-Start) | Constant (30.0 km/h) | **Soft Ban** |
-| **Altitude Delta** | Natural Fluctuation | Flat (0m change) | **Reject Transaction** |
-
-| Regla | Límite | Detection Method |
-|-------|--------| :--- |
-| **Max Speed** | 30 km/h | Time-Distance Delta |
-| **Jump Detection** | 500m | Kalman Filter Smoothing |
-| **Device Integrity** | Hardware | Google Play Attestation |
-
----
-
-## 📊 Roadmap 2026
-
-- **Q1**: Beta cerrada, Safari Zone Events
-- **Q2**: Lanzamiento público, Battle Pass
-- **Q3**: B2B SaaS SDK, Corporate Wellness
-- **Q4**: Aura Dating, Landlords System
+*   **Frontend**: React 18, TypeScript, Vite.
+*   **Estilos**: Tailwind CSS, Framer Motion (animaciones).
+*   **Estado**: Context API / Zustand (manejo del inventario y economía).
+*   **Infraestructura**: Despliegue continuo con GitHub Actions y Vercel/Netlify.
 
 ---
 
 ## 🤝 Contribuir
+Este proyecto es un MVP (Minimum Viable Product). Estamos abiertos a sugerencias sobre nuevas mecánicas de gamificación, sistemas de pujas alternativas o mejoras en el rendimiento del frontend.
 
-¿Quieres contribuir al proyecto?
-
-1. Fork el repositorio
-2. Crea una branch (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add AmazingFeature'`)
-4. Push a la branch (`git push origin feature/AmazingFeature`)
+1. Haz un Fork del proyecto
+2. Crea tu rama de características (`git checkout -b feature/AmazingFeature`)
+3. Haz commit de tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Haz push a la rama (`git push origin feature/AmazingFeature`)
 5. Abre un Pull Request
 
-O simplemente contacta a **ramiballes96@gmail.com** para discutir ideas.
-
 ---
 
-## 📜 Licencia
-
-Este proyecto es un prototipo MVP. Todos los derechos reservados.  
-© 2024-2025 Manuel Ramírez Ballesteros
-
----
-
-<p align="center">
-  <strong>Hecho con ❤️ por Manuel Ramírez Ballesteros</strong><br>
-  <a href="mailto:ramiballes96@gmail.com">ramiballes96@gmail.com</a>
-</p>
+Desarrollado con ❤️ por [Manuel Ramírez Ballesteros](mailto:ramiballes96@gmail.com)
