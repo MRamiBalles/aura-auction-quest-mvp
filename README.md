@@ -1,63 +1,53 @@
----
+# Aura Auction Quest
 
-# 🏆 Aura Auction Quest (MVP)
-
-> **Plataforma de Subastas Gamificada con Sistema de Quests y Recompensas**
+**Sovereign Gamified Auction Platform**
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![Vite](https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E)](https://vitejs.dev/)
 
-Aura Auction Quest es una plataforma interactiva que fusiona las dinámicas de **subastas en tiempo real** con elementos de **juegos de rol (RPG)**. Los usuarios pueden participar en pujas por items exclusivos, completar misiones (quests) diarias y ganar experiencia para desbloquear recompensas y mejorar su estatus en la plataforma.
+Aura Auction Quest is an interactive platform bridging real-time bidding systems with RPG (Role-Playing Game) progression logic. It provides concurrent state management for bids alongside persistent user progression and inventory tracking.
 
-## ✨ Características Principales
+## Architecture & Features
 
-*   **Subastas Dinámicas**: Sistema de pujas en tiempo real con cuentas atrás precisas.
-*   **Motor de Quests**: Misiones diarias y semanales que incentivan la interacción y recompensan la lealtad de los usuarios.
-*   **Economía Virtual**: Moneda interna e inventario donde los usuarios gestionan los items ganados.
-*   **Diseño Reactivo**: UI/UX premium desarrollada con React y Vite, enfocada en la velocidad y la gamificación visual.
-*   **Arquitectura Escalable**: Código TypeScript altamente tipado para asegurar la estabilidad del MVP en entornos de alta concurrencia.
+- **Real-Time Auction Engine**: Low-latency bidding system with deterministic countdown management.
+- **Quest & Progression Module**: Daily/weekly objective tracking that hooks into core user engagement loops.
+- **Virtual Economy**: Internal ledger for currency and inventory tracking, ensuring atomic transactions during auctions.
+- **Frontend Infrastructure**: React 18 with Vite for optimized build pipelines and HMR. Strongly typed with TypeScript to enforce domain models.
 
-## 🚀 Inicio Rápido
+## Quickstart
 
-### Requisitos Previos
-*   **Node.js**: Versión 18 o superior.
-*   **Gestor de paquetes**: npm o pnpm.
+### Prerequisites
+- Node.js 18+
+- npm or pnpm
 
-### Instalación
+### Setup
 ```bash
-# 1. Clona el repositorio
 git clone https://github.com/MRamiBalles/aura-auction-quest-mvp.git
 cd aura-auction-quest-mvp
-
-# 2. Instala las dependencias
 npm install
-
-# 3. Inicia el servidor de desarrollo
 npm run dev
 ```
-La aplicación estará disponible en `http://localhost:5173`.
+
+The application runs locally on `http://localhost:5173`.
+
+## Tech Stack
+
+- **Core**: React 18, TypeScript, Vite
+- **Styling**: Tailwind CSS
+- **State Management**: Context API / Zustand
+- **CI/CD**: GitHub Actions
+
+## Contributing
+
+This is a Minimum Viable Product (MVP) aimed at validating the core auction and gamification loops.
+Standard PR workflows apply:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/module-name`)
+3. Commit changes (`git commit -am 'feat: implement module-name'`)
+4. Push to branch (`git push origin feature/module-name`)
+5. Open a Pull Request
 
 ---
-
-## 🛠️ Stack Tecnológico
-
-*   **Frontend**: React 18, TypeScript, Vite.
-*   **Estilos**: Tailwind CSS, Framer Motion (animaciones).
-*   **Estado**: Context API / Zustand (manejo del inventario y economía).
-*   **Infraestructura**: Despliegue continuo con GitHub Actions y Vercel/Netlify.
-
----
-
-## 🤝 Contribuir
-Este proyecto es un MVP (Minimum Viable Product). Estamos abiertos a sugerencias sobre nuevas mecánicas de gamificación, sistemas de pujas alternativas o mejoras en el rendimiento del frontend.
-
-1. Haz un Fork del proyecto
-2. Crea tu rama de características (`git checkout -b feature/AmazingFeature`)
-3. Haz commit de tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Haz push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
----
-
-Desarrollado con ❤️ por [Manuel Ramírez Ballesteros](mailto:ramiballes96@gmail.com)
+**Author**: Manuel Ramírez Ballesteros
